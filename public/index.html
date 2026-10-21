@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedidos de Música & Karaokê</title>
     <style>
-        body { font-family: sans-serif; background: #111; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        body { font-family: sans-serif; background: #111; color: #fff; margin: 0; padding: 15px; text-align: center; }
         .hidden { display: none !important; }
-        .tab-btn { background: #333; color: white; padding: 8px 4px; border: none; cursor: pointer; width: 19%; font-size: 0.75em; }
-        .tab-btn.active { background: #e63946; font-weight: bold; }
+        .nav-container { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 15px; }
+        .tab-btn { background: #222; color: #aaa; border: 1px solid #444; padding: 10px 8px; border-radius: 6px; cursor: pointer; flex: 1 1 30%; font-size: 0.8em; font-weight: bold; }
+        .tab-btn.active { background: #e63946; color: #fff; border-color: #e63946; }
         .card { background: #222; padding: 12px; margin: 8px 0; border-radius: 8px; text-align: left; border-left: 4px solid #e63946; }
         input, button { padding: 12px; margin-top: 10px; width: 100%; box-sizing: border-box; border-radius: 5px; border: none; }
         button { background: #e63946; color: white; font-weight: bold; cursor: pointer; }
         .dj-virtual-msg { color: #a8dadc; font-style: italic; font-size: 0.85em; margin-bottom: 12px; }
         .item-catalogo { background: #222; padding: 10px; margin: 5px 0; border-radius: 5px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
         .item-catalogo button { width: auto; padding: 6px 12px; margin: 0; background: #4ade80; color: #000; }
-        .filtro-btn { background: #444; margin-bottom: 10px; font-size: 0.85em; }
-        .filtro-btn.ativo { background: #457b9d; }
+        .filtro-btn { background: #333; color: #ccc; margin-bottom: 10px; font-size: 0.8em; border: 1px solid #555; }
+        .filtro-btn.ativo { background: #457b9d; color: #fff; }
     </style>
 </head>
 <body>
@@ -29,39 +30,39 @@
 
     <div id="app-screen" class="hidden">
         <h3 id="saudacao"></h3>
-        <div>
+        <div class="nav-container">
             <button class="tab-btn active" id="btn-pista" onclick="mudarAba('pista')">🎵 Pedir</button>
-            <button class="tab-btn" id="btn-filapista" onclick="mudarAba('filapista')">📋 Fila</button>
+            <button class="tab-btn" id="btn-filapista" onclick="mudarAba('filapista')">📋 Fila Pista</button>
             <button class="tab-btn" id="btn-jarolou" onclick="mudarAba('jarolou')">📜 Já Rolou</button>
             <button class="tab-btn" id="btn-karaoke" onclick="mudarAba('karaoke')">🎤 Karaokê</button>
             <button class="tab-btn" id="btn-filakaraoke" onclick="mudarAba('filakaraoke')">📋 Fila K.</button>
         </div>
 
-        <div id="aba-pista" style="margin-top: 15px;">
+        <div id="aba-pista">
             <input type="text" id="busca-musica" placeholder="Pesquisar artista ou música..." onkeyup="filtrarCatalogo()">
             <div id="lista-catalogo" style="max-height: 350px; overflow-y: auto; margin-top: 10px;"></div>
         </div>
 
-        <div id="aba-filapista" class="hidden" style="margin-top: 15px;">
+        <div id="aba-filapista" class="hidden">
             <h4>Fila da Pista Ao Vivo</h4>
             <button class="filtro-btn" id="btn-filtro-pista" onclick="toggleFiltroPista()">Ver apenas os meus pedidos</button>
             <div id="lista-fila-pista">Nenhuma música na fila.</div>
         </div>
 
-        <div id="aba-jarolou" class="hidden" style="margin-top: 15px;">
+        <div id="aba-jarolou" class="hidden">
             <h4>Já Rolaram na Pista 🎧</h4>
             <div id="lista-jarolou">Nenhuma música tocou ainda.</div>
         </div>
 
-        <div id="aba-karaoke" class="hidden" style="margin-top: 15px;">
+        <div id="aba-karaoke" class="hidden">
             <h4 style="color: #457b9d;">The Voice Família 🎤</h4>
-            <p class="dj-virtual-msg">⚠️ Pedido guardado na geladeira!</p>
+            <p class="dj-virtual-msg">⚠️ Pedido guardado na geladeira para o momento oficial!</p>
             <input type="text" id="karaoke-artista" placeholder="Artista / Banda">
             <input type="text" id="karaoke-musica" placeholder="Música">
             <button style="background: #457b9d;" onclick="enviarKaraoke()">Guardar na Geladeira</button>
         </div>
 
-        <div id="aba-filakaraoke" class="hidden" style="margin-top: 15px;">
+        <div id="aba-filakaraoke" class="hidden">
             <h4>Fila do Karaokê (Geladeira)</h4>
             <button class="filtro-btn" id="btn-filtro-karaoke" onclick="toggleFiltroKaraoke()">Ver apenas os meus pedidos</button>
             <div id="lista-fila-karaoke">Nenhum pedido na geladeira.</div>
@@ -129,7 +130,7 @@
                 nome: meuNome, artista: item.artista, musica: item.musica, caminho: item.caminho,
                 tipo: 'pista', hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             });
-            alert(`🤖 Pedido de "${item.musica}" enviado para a pista!`);
+            alert(`🤖 Pedido enviado para a pista!`);
             mudarAba('filapista');
         }
 
@@ -165,14 +166,12 @@
         });
 
         function renderizarFilas() {
-            // Fila Pista
             const divPista = document.getElementById('lista-fila-pista');
             divPista.innerHTML = '';
             let pistaFiltro = apenasMeusPista ? estadoGlobal.filaPista.filter(p => p.nome.toLowerCase() === meuNome.toLowerCase()) : estadoGlobal.filaPista;
             if (pistaFiltro.length === 0) divPista.innerHTML = '<p style="color:#666;">Nenhuma música na fila.</p>';
-            else pistaFiltro.forEach((p, i) => divPista.innerHTML += `<div class="card"><strong>${p.musica}</strong><br><small>Artista: ${p.artista} | Por: ${p.nome}</small></div>`);
+            else pistaFiltro.forEach(p => divPista.innerHTML += `<div class="card"><strong>${p.musica}</strong><br><small>Artista: ${p.artista} | Por: ${p.nome}</small></div>`);
 
-            // Já Rolou (Histórico)
             const divJaRolou = document.getElementById('lista-jarolou');
             divJaRolou.innerHTML = '';
             if (!estadoGlobal.historicoJaRolou || estadoGlobal.historicoJaRolou.length === 0) {
@@ -183,7 +182,6 @@
                 });
             }
 
-            // Fila Karaokê
             const divKaraoke = document.getElementById('lista-fila-karaoke');
             divKaraoke.innerHTML = '';
             let karaokeFiltro = apenasMeusKaraoke ? estadoGlobal.filaKaraoke.filter(p => p.nome.toLowerCase() === meuNome.toLowerCase()) : estadoGlobal.filaKaraoke;
