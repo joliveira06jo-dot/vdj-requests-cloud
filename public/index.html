@@ -8,7 +8,7 @@
         body { font-family: sans-serif; background: #111; color: #fff; margin: 0; padding: 15px; text-align: center; }
         .hidden { display: none !important; }
         .nav-container { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 15px; }
-        .tab-btn { background: #222; color: #aaa; border: 1px solid #444; padding: 10px 8px; border-radius: 6px; cursor: pointer; flex: 1 1 30%; font-size: 0.8em; font-weight: bold; }
+        .tab-btn { background: #222; color: #aaa; border: 1px solid #444; padding: 10px 6px; border-radius: 6px; cursor: pointer; flex: 1 1 18%; font-size: 0.75em; font-weight: bold; }
         .tab-btn.active { background: #e63946; color: #fff; border-color: #e63946; }
         .card { background: #222; padding: 12px; margin: 8px 0; border-radius: 8px; text-align: left; border-left: 4px solid #e63946; }
         input, button { padding: 12px; margin-top: 10px; width: 100%; box-sizing: border-box; border-radius: 5px; border: none; }
@@ -90,12 +90,17 @@
         }
 
         function mudarAba(aba) {
-            ['pista', 'filapista', 'jarolou', 'karaoke', 'filakaraoke'].forEach(a => {
-                document.getElementById(`aba-${a}`).classList.add('hidden');
-                document.getElementById(`btn-${a}`).classList.remove('active');
+            const abas = ['pista', 'filapista', 'jarolou', 'karaoke', 'filakaraoke'];
+            abas.forEach(a => {
+                const div = document.getElementById(`aba-${a}`);
+                const btn = document.getElementById(`btn-${a}`);
+                if (div) div.classList.add('hidden');
+                if (btn) btn.classList.remove('active');
             });
-            document.getElementById(`aba-${aba}`).classList.remove('hidden');
-            document.getElementById(`btn-${aba}`).classList.add('active');
+            const divAtiva = document.getElementById(`aba-${aba}`);
+            const btnAtivo = document.getElementById(`btn-${aba}`);
+            if (divAtiva) divAtiva.classList.remove('hidden');
+            if (btnAtivo) btnAtivo.classList.add('active');
         }
 
         socket.on('update_biblioteca', (catalogo) => {
@@ -105,6 +110,7 @@
 
         function renderizarCatalogo(lista) {
             const div = document.getElementById('lista-catalogo');
+            if (!div) return;
             div.innerHTML = '';
             lista.forEach((item) => {
                 div.innerHTML += `
@@ -167,26 +173,33 @@
 
         function renderizarFilas() {
             const divPista = document.getElementById('lista-fila-pista');
-            divPista.innerHTML = '';
-            let pistaFiltro = apenasMeusPista ? estadoGlobal.filaPista.filter(p => p.nome.toLowerCase() === meuNome.toLowerCase()) : estadoGlobal.filaPista;
-            if (pistaFiltro.length === 0) divPista.innerHTML = '<p style="color:#666;">Nenhuma música na fila.</p>';
-            else pistaFiltro.forEach(p => divPista.innerHTML += `<div class="card"><strong>${p.musica}</strong><br><small>Artista: ${p.artista} | Por: ${p.nome}</small></div>`);
+            if (divPista) {
+                divPista.innerHTML = '';
+                let pistaFiltro = apenasMeusPista ? (estadoGlobal.filaPista || []).filter(p => p.nome.toLowerCase() === meuNome.toLowerCase()) : (estadoGlobal.filaPista || []);
+                if (pistaFiltro.length === 0) divPista.innerHTML = '<p style="color:#666;">Nenhuma música na fila.</p>';
+                else pistaFiltro.forEach(p => divPista.innerHTML += `<div class="card"><strong>${p.musica}</strong><br><small>Artista: ${p.artista} | Por: ${p.nome}</small></div>`);
+            }
 
             const divJaRolou = document.getElementById('lista-jarolou');
-            divJaRolou.innerHTML = '';
-            if (!estadoGlobal.historicoJaRolou || estadoGlobal.historicoJaRolou.length === 0) {
-                divJaRolou.innerHTML = '<p style="color:#666;">Nenhuma música tocou ainda.</p>';
-            } else {
-                estadoGlobal.historicoJaRolou.forEach(p => {
-                    divJaRolou.innerHTML += `<div class="card" style="border-left-color: #4ade80;"><strong>${p.musica}</strong> - <small>${p.artista}</small><br><small>Pedida por: ${p.nome} | ⏰ Tocou às: ${p.horaTocada}</small></div>`;
-                });
+            if (divJaRolou) {
+                divJaRolou.innerHTML = '';
+                let jaRolouLista = estadoGlobal.historicoJaRolou || [];
+                if (jaRolouLista.length === 0) {
+                    divJaRolou.innerHTML = '<p style="color:#666;">Nenhuma música tocou ainda.</p>';
+                } else {
+                    jaRolouLista.forEach(p => {
+                        divJaRolou.innerHTML += `<div class="card" style="border-left-color: #4ade80;"><strong>${p.musica}</strong> - <small>${p.artista}</small><br><small>Pedida por: ${p.nome} | ⏰ Tocou às: ${p.horaTocada}</small></div>`;
+                    });
+                }
             }
 
             const divKaraoke = document.getElementById('lista-fila-karaoke');
-            divKaraoke.innerHTML = '';
-            let karaokeFiltro = apenasMeusKaraoke ? estadoGlobal.filaKaraoke.filter(p => p.nome.toLowerCase() === meuNome.toLowerCase()) : estadoGlobal.filaKaraoke;
-            if (karaokeFiltro.length === 0) divKaraoke.innerHTML = '<p style="color:#666;">Nenhum pedido na geladeira.</p>';
-            else karaokeFiltro.forEach(p => divKaraoke.innerHTML += `<div class="card" style="border-left-color: #457b9d;"><strong>${p.musica}</strong> - <small>${p.artista}</small><br><small>Cantor(a): ${p.nome}</small></div>`);
+            if (divKaraoke) {
+                divKaraoke.innerHTML = '';
+                let karaokeFiltro = apenasMeusKaraoke ? (estadoGlobal.filaKaraoke || []).filter(p => p.nome.toLowerCase() === meuNome.toLowerCase()) : (estadoGlobal.filaKaraoke || []);
+                if (karaokeFiltro.length === 0) divKaraoke.innerHTML = '<p style="color:#666;">Nenhum pedido na geladeira.</p>';
+                else karaokeFiltro.forEach(p => divKaraoke.innerHTML += `<div class="card" style="border-left-color: #457b9d;"><strong>${p.musica}</strong> - <small>${p.artista}</small><br><small>Cantor(a): ${p.nome}</small></div>`);
+            }
         }
     </script>
 </body>
