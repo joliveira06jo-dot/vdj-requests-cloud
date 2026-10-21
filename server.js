@@ -2,6 +2,8 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -11,66 +13,106 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-let dbBiblioteca = []; 
-let filaPista = [];
-let filaKaraoke = [];
-let historicoJaRolou = [];
+const DB_FILE = path.join(__dirname, 'estado.json');
+
+let estado = {
+    dbBiblioteca: [],
+    filaPista: [],
+    filaKaraoke: [],
+    historicoJaRolou: []
+};
+
+if (fs.existsSync(DB_FILE)) {
+    try {
+        estado = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    } catch (e) {
+        console.log("Criando novo arquivo de estado.");
+    }
+}
+
+function salvarEstado() {
+    try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(estado, null, 2));
+    } catch (e) {
+        console.error("Erro ao persistir estado:", e);
+    }
+}
 
 io.on('connection', (socket) => {
-    socket.emit('sync_state', { filaPista, filaKaraoke, historicoJaRolou });
-    if (dbBiblioteca.length > 0) {
-        socket.emit('update_biblioteca', dbBiblioteca);
+    socket.emit('sync_state', { 
+        filaPista: estado.filaPista, 
+        filaKaraoke: estado.filaKaraoke, 
+        historicoJaRolou: estado.historicoJaRolou 
+    });
+
+    if (estado.dbBiblioteca.length > 0) {
+        socket.emit('update_biblioteca', estado.dbBiblioteca);
     }
 
     socket.on('update_biblioteca', (dados) => {
         if (dados && dados.length > 0) {
-            dbBiblioteca = dados;
-            io.emit('update_biblioteca', dbBiblioteca);
+            estado.dbBiblioteca = dados;
+            salvarEstado();
+            io.emit('update_biblioteca', estado.dbBiblioteca);
         }
     });
 
     socket.on('novo_pedido', (pedido) => {
         if (pedido.tipo === 'karaoke') {
-            filaKaraoke.push(pedido);
+            estado.filaKaraoke.push(pedido);
         } else {
-            const jaExiste = filaPista.some(p => p.musica.toLowerCase() === pedido.musica.toLowerCase());
+            const jaExiste = estado.filaPista.some(p => p.musica.toLowerCase() === pedido.musica.toLowerCase());
             if (jaExiste) {
                 socket.emit('erro_pedido', 'Esta música já está na fila de espera!');
                 return;
             }
-            filaPista.push(pedido);
+            estado.filaPista.push(pedido);
         }
-        io.emit('sync_state', { filaPista, filaKaraoke, historicoJaRolou });
+        salvarEstado();
+        io.emit('sync_state', { 
+            filaPista: estado.filaPista, 
+            filaKaraoke: estado.filaKaraoke, 
+            historicoJaRolou: estado.historicoJaRolou 
+        });
     });
 
-    // Baixa automática enviada pelo Python quando o VirtualDJ executa a música
     socket.on('musica_tocada', (dados) => {
-        const index = filaPista.findIndex(p => p.caminho === dados.caminho || p.musica.toLowerCase() === dados.musica.toLowerCase());
+        const index = estado.filaPista.findIndex(p => p.caminho === dados.caminho || p.musica.toLowerCase() === dados.musica.toLowerCase());
         if (index !== -1) {
-            const [itemTocado] = filaPista.splice(index, 1);
+            const [itemTocado] = estado.filaPista.splice(index, 1);
             itemTocado.horaTocada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            historicoJaRolou.unshift(itemTocado);
-            if (historicoJaRolou.length > 20) historicoJaRolou.pop();
-            io.emit('sync_state', { filaPista, filaKaraoke, historicoJaRolou });
+            estado.historicoJaRolou.unshift(itemTocado);
+            if (estado.historicoJaRolou.length > 20) estado.historicoJaRolou.pop();
+            salvarEstado();
+            io.emit('sync_state', { 
+                filaPista: estado.filaPista, 
+                filaKaraoke: estado.filaKaraoke, 
+                historicoJaRolou: estado.historicoJaRolou 
+            });
         }
     });
 
     socket.on('admin_acao', ({ tipo, index }) => {
         if (tipo === 'pista') {
-            const [removido] = filaPista.splice(index, 1);
+            const [removido] = estado.filaPista.splice(index, 1);
             if (removido) {
                 removido.horaTocada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                historicoJaRolou.unshift(removido);
-                if (historicoJaRolou.length > 20) historicoJaRolou.pop();
+                estado.historicoJaRolou.unshift(removido);
+                if (estado.historicoJaRolou.length > 20) estado.historicoJaRolou.pop();
             }
         } else if (tipo === 'karaoke') {
-            filaKaraoke.splice(index, 1);
+            estado.filaKaraoke.splice(index, 1);
         }
-        io.emit('sync_state', { filaPista, filaKaraoke, historicoJaRolou });
+        salvarEstado();
+        io.emit('sync_state', { 
+            filaPista: estado.filaPista, 
+            filaKaraoke: estado.filaKaraoke, 
+            historicoJaRolou: estado.historicoJaRolou 
+        });
     });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`🚀 Servidor operando na porta ${PORT}`);
 });
