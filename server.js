@@ -16,9 +16,6 @@ let filaPista = [];
 let filaKaraoke = [];
 
 io.on('connection', (socket) => {
-    console.log(`[+] Nova conexão: ${socket.id}`);
-
-    // Envia estado atual imediatamente para qualquer cliente (Admin ou App)
     socket.emit('sync_state', { filaPista, filaKaraoke });
     if (dbBiblioteca.length > 0) {
         socket.emit('update_biblioteca', dbBiblioteca);
@@ -46,20 +43,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on('admin_acao', ({ tipo, index }) => {
-        if (tipo === 'pista') {
-            filaPista.splice(index, 1);
-        } else if (tipo === 'karaoke') {
-            filaKaraoke.splice(index, 1);
-        }
+        if (tipo === 'pista') filaPista.splice(index, 1);
+        else if (tipo === 'karaoke') filaKaraoke.splice(index, 1);
         io.emit('sync_state', { filaPista, filaKaraoke });
-    });
-
-    socket.on('disconnect', () => {
-        console.log(`[-] Desconectado: ${socket.id}`);
     });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
+server.listen(PORT);
