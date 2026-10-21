@@ -90,12 +90,39 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Baixa de pedido de convidado
     socket.on('musica_tocada', (dados) => {
         const index = estado.filaPista.findIndex(p => p.caminho === dados.caminho || p.musica.toLowerCase() === dados.musica.toLowerCase());
         if (index !== -1) {
             const [itemTocado] = estado.filaPista.splice(index, 1);
             itemTocado.horaTocada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             estado.historicoJaRolou.unshift(itemTocado);
+            if (estado.historicoJaRolou.length > 30) estado.historicoJaRolou.pop();
+            salvarEstado();
+            io.emit('sync_state', { 
+                filaPista: estado.filaPista, 
+                filaKaraoke: estado.filaKaraoke, 
+                historicoJaRolou: estado.historicoJaRolou 
+            });
+        }
+    });
+
+    // Registro de música tocada diretamente pelo DJ (fora dos pedidos)
+    socket.on('musica_tocada_dj', (dados) => {
+        const horaAtual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const itemDJ = {
+            musica: dados.musica,
+            artista: dados.artista,
+            nome: 'Seleção do DJ',
+            horaTocada: horaAtual
+        };
+
+        const jaExisteRecente = estado.historicoJaRolou.some(h => 
+            h.musica.toLowerCase() === itemDJ.musica.toLowerCase() && h.horaTocada === horaAtual
+        );
+
+        if (!jaExisteRecente) {
+            estado.historicoJaRolou.unshift(itemDJ);
             if (estado.historicoJaRolou.length > 30) estado.historicoJaRolou.pop();
             salvarEstado();
             io.emit('sync_state', { 
