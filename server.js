@@ -50,6 +50,17 @@ io.on('connection', (socket) => {
         socket.emit('update_biblioteca', estado.dbBiblioteca);
     }
 
+    socket.on('zerar_fila', () => {
+        console.log("[RESET] Comando de zerar fila recebido do bridge. Zerando pedidos da pista...");
+        estado.filaPista = [];
+        salvarEstado();
+        io.emit('sync_state', { 
+            filaPista: estado.filaPista, 
+            filaKaraoke: estado.filaKaraoke, 
+            historicoJaRolou: estado.historicoJaRolou 
+        });
+    });
+
     socket.on('update_biblioteca', (dados) => {
         if (dados && dados.length > 0) {
             estado.dbBiblioteca = dados;
@@ -90,7 +101,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Baixa de pedido de convidado
     socket.on('musica_tocada', (dados) => {
         const index = estado.filaPista.findIndex(p => p.caminho === dados.caminho || p.musica.toLowerCase() === dados.musica.toLowerCase());
         if (index !== -1) {
@@ -107,7 +117,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Registro de música tocada diretamente pelo DJ (fora dos pedidos)
     socket.on('musica_tocada_dj', (dados) => {
         const horaAtual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const itemDJ = {
