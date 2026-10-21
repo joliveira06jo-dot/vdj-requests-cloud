@@ -7,14 +7,16 @@
     <style>
         body { font-family: sans-serif; background: #111; color: #fff; margin: 0; padding: 20px; text-align: center; }
         .hidden { display: none !important; }
-        .tab-btn { background: #333; color: white; padding: 10px; border: none; cursor: pointer; width: 32%; font-size: 0.9em; }
+        .tab-btn { background: #333; color: white; padding: 10px; border: none; cursor: pointer; width: 24%; font-size: 0.8em; }
         .tab-btn.active { background: #e63946; font-weight: bold; }
         .card { background: #222; padding: 15px; margin: 10px 0; border-radius: 8px; text-align: left; border-left: 4px solid #e63946; }
-        input, button, textarea { padding: 12px; margin-top: 10px; width: 100%; box-sizing: border-box; border-radius: 5px; border: none; }
+        input, button { padding: 12px; margin-top: 10px; width: 100%; box-sizing: border-box; border-radius: 5px; border: none; }
         button { background: #e63946; color: white; font-weight: bold; cursor: pointer; }
         .dj-virtual-msg { color: #a8dadc; font-style: italic; font-size: 0.9em; margin-bottom: 15px; }
         .item-catalogo { background: #222; padding: 10px; margin: 5px 0; border-radius: 5px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
         .item-catalogo button { width: auto; padding: 6px 12px; margin: 0; background: #4ade80; color: #000; }
+        .filtro-btn { background: #444; margin-bottom: 10px; font-size: 0.9em; }
+        .filtro-btn.ativo { background: #457b9d; }
     </style>
 </head>
 <body>
@@ -30,37 +32,43 @@
         <h3 id="saudacao"></h3>
         
         <div>
-            <button class="tab-btn active" id="btn-tab-pista" onclick="mudarAba('pista')">🎵 Pista</button>
-            <button class="tab-btn" id="btn-tab-karaoke" onclick="mudarAba('karaoke')">🎤 Karaokê</button>
-            <button class="tab-btn" id="btn-tab-fila" onclick="mudarAba('fila')">📋 Fila</button>
+            <button class="tab-btn active" id="btn-pista" onclick="mudarAba('pista')">🎵 Pista</button>
+            <button class="tab-btn" id="btn-filapista" onclick="mudarAba('filapista')">📋 Fila Pista</button>
+            <button class="tab-btn" id="btn-karaoke" onclick="mudarAba('karaoke')">🎤 Karaokê</button>
+            <button class="tab-btn" id="btn-filakaraoke" onclick="mudarAba('filakaraoke')">📋 Fila Karaokê</button>
         </div>
 
-        <!-- Aba: Pista -->
+        <!-- 1. Aba Pista -->
         <div id="aba-pista" style="margin-top: 20px;">
             <p class="dj-virtual-msg">Pesquise no catálogo oficial do DJ:</p>
             <input type="text" id="busca-musica" placeholder="Digite o artista ou música..." onkeyup="filtrarCatalogo()">
             <div id="lista-catalogo" style="max-height: 350px; overflow-y: auto; margin-top: 10px;">
                 <p style="color:#666;">Carregando catálogo...</p>
             </div>
-            <button style="background: #444; margin-top:20px;" onclick="mostrarModalNaoEncontrei()">Não encontrei minha música</button>
+            <button style="background: #444; margin-top:20px;" onclick="alert('Procure o DJ na cabine!')">Não encontrei minha música</button>
         </div>
 
-        <!-- Aba: Karaokê (The Voice Família) -->
+        <!-- 2. Aba Fila Pista -->
+        <div id="aba-filapista" class="hidden" style="margin-top: 20px;">
+            <h4>Fila da Pista Ao Vivo</h4>
+            <button class="filtro-btn" id="btn-filtro-pista" onclick="toggleFiltroPista()">Ver apenas os meus pedidos</button>
+            <div id="lista-fila-pista">Nenhuma música na fila.</div>
+        </div>
+
+        <!-- 3. Aba Karaokê -->
         <div id="aba-karaoke" class="hidden" style="margin-top: 20px;">
             <h4 style="color: #457b9d;">The Voice Família 🎤</h4>
-            <p class="dj-virtual-msg">⚠️ Seu pedido ficará guardado na geladeira! As cantorias só começam no momento oficial do The Voice.</p>
+            <p class="dj-virtual-msg">⚠️ Pedido guardado na geladeira para o momento oficial!</p>
             <input type="text" id="karaoke-artista" placeholder="Nome do Artista / Banda">
             <input type="text" id="karaoke-musica" placeholder="Nome da Música">
-            <button style="background: #457b9d;" onclick="enviarKaraoke()">Guardar Pedido para o Karaokê</button>
+            <button style="background: #457b9d;" onclick="enviarKaraoke()">Guardar na Geladeira</button>
         </div>
 
-        <!-- Aba: Fila -->
-        <div id="aba-fila" class="hidden" style="margin-top: 20px;">
-            <h4>Fila da Pista Ao Vivo</h4>
-            <div id="lista-fila-pista">Nenhuma música na fila.</div>
-            <hr style="border-color: #333; margin: 20px 0;">
+        <!-- 4. Aba Fila Karaokê -->
+        <div id="aba-filakaraoke" class="hidden" style="margin-top: 20px;">
             <h4>Fila do Karaokê (Geladeira)</h4>
-            <div id="lista-fila-karaoke">Nenhum pedido de karaokê ainda.</div>
+            <button class="filtro-btn" id="btn-filtro-karaoke" onclick="toggleFiltroKaraoke()">Ver apenas os meus pedidos</button>
+            <div id="lista-fila-karaoke">Nenhum pedido na geladeira.</div>
         </div>
     </div>
 
@@ -69,6 +77,9 @@
         const socket = io();
         let meuNome = localStorage.getItem('vdj_nome');
         let catalogoGlobal = [];
+        let estadoGlobal = { filaPista: [], filaKaraoke: [] };
+        let apenasMeusPista = false;
+        let apenasMeusKaraoke = false;
 
         if (meuNome) {
             document.getElementById('login-screen').classList.add('hidden');
@@ -87,27 +98,12 @@
         }
 
         function mudarAba(aba) {
-            document.getElementById('aba-pista').classList.add('hidden');
-            document.getElementById('aba-karaoke').classList.add('hidden');
-            document.getElementById('aba-fila').classList.add('hidden');
-            document.getElementById('btn-tab-pista').classList.remove('active');
-            document.getElementById('btn-tab-karaoke').classList.remove('active');
-            document.getElementById('btn-tab-fila').classList.remove('active');
-
-            if (aba === 'pista') {
-                document.getElementById('aba-pista').classList.remove('hidden');
-                document.getElementById('btn-tab-pista').classList.add('active');
-            } else if (aba === 'karaoke') {
-                document.getElementById('aba-karaoke').classList.remove('hidden');
-                document.getElementById('btn-tab-karaoke').classList.add('active');
-            } else {
-                document.getElementById('aba-fila').classList.remove('hidden');
-                document.getElementById('btn-tab-fila').classList.add('active');
-            }
-        }
-
-        function mostrarModalNaoEncontrei() {
-            alert("🤖 DJ Virtual: Nosso catálogo é rigorosamente selecionado! Se não achou sua faixa, procure o DJ pessoalmente na cabine.");
+            ['pista', 'filapista', 'karaoke', 'filakaraoke'].forEach(a => {
+                document.getElementById(`aba-${a}`).classList.add('hidden');
+                document.getElementById(`btn-${a}`).classList.remove('active');
+            });
+            document.getElementById(`aba-${aba}`).classList.remove('hidden');
+            document.getElementById(`btn-${aba}`).classList.add('active');
         }
 
         socket.on('update_biblioteca', (catalogo) => {
@@ -144,51 +140,61 @@
         }
 
         function enviarPedidoPista(artista, musica) {
-            const pedido = {
-                nome: meuNome,
-                artista: artista,
-                musica: musica,
-                tipo: 'pista',
+            socket.emit('novo_pedido', {
+                nome: meuNome, artista, musica, tipo: 'pista',
                 hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-            socket.emit('novo_pedido', pedido);
-            alert(`🤖 DJ Virtual: Pedido de "${musica}" enviado para a fila da pista!`);
-            mudarAba('fila');
+            });
+            alert(`🤖 Pedido de "${musica}" enviado para a pista!`);
+            mudarAba('filapista');
         }
 
         function enviarKaraoke() {
             const artista = document.getElementById('karaoke-artista').value.trim();
             const musica = document.getElementById('karaoke-musica').value.trim();
-            if (!artista || !musica) {
-                alert("Preencha o artista e a música do karaokê!");
-                return;
-            }
-            const pedido = {
-                nome: meuNome,
-                artista: artista,
-                musica: musica,
-                tipo: 'karaoke',
+            if (!artista || !musica) { alert("Preencha os campos!"); return; }
+            socket.emit('novo_pedido', {
+                nome: meuNome, artista, musica, tipo: 'karaoke',
                 hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-            socket.emit('novo_pedido', pedido);
-            alert(`🎤 Pedido guardado na geladeira do The Voice Família!`);
+            });
+            alert(`🎤 Guardado na geladeira do The Voice!`);
             document.getElementById('karaoke-artista').value = '';
             document.getElementById('karaoke-musica').value = '';
-            mudarAba('fila');
+            mudarAba('filakaraoke');
         }
 
-        socket.on('erro_pedido', (msg) => {
-            alert("⚠️ " + msg);
-        });
+        function toggleFiltroPista() {
+            apenasMeusPista = !apenasMeusPista;
+            const btn = document.getElementById('btn-filtro-pista');
+            btn.classList.toggle('ativo', apenasMeusPista);
+            btn.innerText = apenasMeusPista ? "Mostrando apenas os meus pedidos" : "Ver apenas os meus pedidos";
+            renderizarFilas();
+        }
+
+        function toggleFiltroKaraoke() {
+            apenasMeusKaraoke = !apenasMeusKaraoke;
+            const btn = document.getElementById('btn-filtro-karaoke');
+            btn.classList.toggle('ativo', apenasMeusKaraoke);
+            btn.innerText = apenasMeusKaraoke ? "Mostrando apenas os meus pedidos" : "Ver apenas os meus pedidos";
+            renderizarFilas();
+        }
 
         socket.on('sync_state', (estado) => {
-            // Renderiza Fila Pista
+            estadoGlobal = estado;
+            renderizarFilas();
+        });
+
+        function renderizarFilas() {
+            // Fila Pista
             const divPista = document.getElementById('lista-fila-pista');
             divPista.innerHTML = '';
-            if (estado.filaPista.length === 0) {
-                divPista.innerHTML = '<p style="color:#666;">Fila vazia.</p>';
+            let pistaFiltro = estadoGlobal.filaPista;
+            if (apenasMeusPista) {
+                pistaFiltro = pistaFiltro.filter(p => p.nome.toLowerCase() === meuNome.toLowerCase());
+            }
+            if (pistaFiltro.length === 0) {
+                divPista.innerHTML = '<p style="color:#666;">Nenhuma música na fila.</p>';
             } else {
-                estado.filaPista.forEach((pedido, index) => {
+                pistaFiltro.forEach((pedido, index) => {
                     let etaMsg = index === 0 ? "Próxima a tocar" : `~${index * 3} min`;
                     divPista.innerHTML += `
                         <div class="card">
@@ -199,13 +205,17 @@
                 });
             }
 
-            // Renderiza Fila Karaokê
+            // Fila Karaokê
             const divKaraoke = document.getElementById('lista-fila-karaoke');
             divKaraoke.innerHTML = '';
-            if (estado.filaKaraoke.length === 0) {
+            let karaokeFiltro = estadoGlobal.filaKaraoke;
+            if (apenasMeusKaraoke) {
+                karaokeFiltro = karaokeFiltro.filter(p => p.nome.toLowerCase() === meuNome.toLowerCase());
+            }
+            if (karaokeFiltro.length === 0) {
                 divKaraoke.innerHTML = '<p style="color:#666;">Nenhum pedido na geladeira.</p>';
             } else {
-                estado.filaKaraoke.forEach((pedido) => {
+                karaokeFiltro.forEach((pedido) => {
                     divKaraoke.innerHTML += `
                         <div class="card" style="border-left-color: #457b9d;">
                             <strong>${pedido.musica}</strong> - <small>${pedido.artista}</small><br>
@@ -214,7 +224,7 @@
                     `;
                 });
             }
-        });
+        }
     </script>
 </body>
 </html>
