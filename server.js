@@ -25,8 +25,9 @@ let estado = {
 if (fs.existsSync(DB_FILE)) {
     try {
         estado = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+        if (!estado.historicoJaRolou) estado.historicoJaRolou = [];
     } catch (e) {
-        console.log("Criando novo arquivo de estado.");
+        console.log("Criando novo banco de estado local.");
     }
 }
 
@@ -34,7 +35,7 @@ function salvarEstado() {
     try {
         fs.writeFileSync(DB_FILE, JSON.stringify(estado, null, 2));
     } catch (e) {
-        console.error("Erro ao persistir estado:", e);
+        console.error("Erro ao salvar estado.json:", e);
     }
 }
 
@@ -76,13 +77,26 @@ io.on('connection', (socket) => {
         });
     });
 
+    socket.on('restaurar_fila', (filaLocal) => {
+        if (estado.filaPista.length === 0 && filaLocal && filaLocal.length > 0) {
+            console.log("[RECUPERAÇÃO] Restaurando fila local enviada pela ponte Python.");
+            estado.filaPista = filaLocal;
+            salvarEstado();
+            io.emit('sync_state', { 
+                filaPista: estado.filaPista, 
+                filaKaraoke: estado.filaKaraoke, 
+                historicoJaRolou: estado.historicoJaRolou 
+            });
+        }
+    });
+
     socket.on('musica_tocada', (dados) => {
         const index = estado.filaPista.findIndex(p => p.caminho === dados.caminho || p.musica.toLowerCase() === dados.musica.toLowerCase());
         if (index !== -1) {
             const [itemTocado] = estado.filaPista.splice(index, 1);
             itemTocado.horaTocada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             estado.historicoJaRolou.unshift(itemTocado);
-            if (estado.historicoJaRolou.length > 20) estado.historicoJaRolou.pop();
+            if (estado.historicoJaRolou.length > 30) estado.historicoJaRolou.pop();
             salvarEstado();
             io.emit('sync_state', { 
                 filaPista: estado.filaPista, 
@@ -98,7 +112,7 @@ io.on('connection', (socket) => {
             if (removido) {
                 removido.horaTocada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 estado.historicoJaRolou.unshift(removido);
-                if (estado.historicoJaRolou.length > 20) estado.historicoJaRolou.pop();
+                if (estado.historicoJaRolou.length > 30) estado.historicoJaRolou.pop();
             }
         } else if (tipo === 'karaoke') {
             estado.filaKaraoke.splice(index, 1);
@@ -114,5 +128,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`🚀 Servidor operando na porta ${PORT}`);
+    console.log(`🚀 Servidor VDJ Requests operando na porta ${PORT}`);
 });
