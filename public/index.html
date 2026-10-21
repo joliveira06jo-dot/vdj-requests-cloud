@@ -1,1 +1,129 @@
-teste
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos de Música</title>
+    <!-- CSS Básico (Estrutural) -->
+    <style>
+        body { font-family: sans-serif; background: #111; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        .hidden { display: none !important; }
+        .tab-btn { background: #333; color: white; padding: 10px; border: none; cursor: pointer; width: 48%; }
+        .tab-btn.active { background: #e63946; font-weight: bold; }
+        .card { background: #222; padding: 15px; margin: 10px 0; border-radius: 8px; text-align: left; border-left: 4px solid #e63946; }
+        input, button { padding: 12px; margin-top: 10px; width: 100%; box-sizing: border-box; border-radius: 5px; border: none; }
+        button { background: #e63946; color: white; font-weight: bold; cursor: pointer; }
+        .dj-virtual-msg { color: #a8dadc; font-style: italic; font-size: 0.9em; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <!-- Tela de Autenticação (Aparece só no primeiro acesso) -->
+    <div id="login-screen">
+        <h2>Bem-vindo à Pista!</h2>
+        <p class="dj-virtual-msg">🤖 Nossa IA "DJ Virtual" precisa te conhecer antes de analisar seus pedidos.</p>
+        <input type="text" id="nome-usuario" placeholder="Digite seu Nome ou Apelido">
+        <!-- O input de foto (ImgBB) será acoplado aqui na próxima iteração -->
+        <button onclick="entrarNaFesta()">Entrar na Festa</button>
+    </div>
+
+    <!-- Tela Principal do App -->
+    <div id="app-screen" class="hidden">
+        <h3 id="saudacao"></h3>
+        
+        <div>
+            <button class="tab-btn active" id="btn-tab-pedir" onclick="mudarAba('pedir')">Pedir Música</button>
+            <button class="tab-btn" id="btn-tab-fila" onclick="mudarAba('fila')">Fila / Já Rolou</button>
+        </div>
+
+        <!-- Aba: Pedir Música -->
+        <div id="aba-pedir" style="margin-top: 20px;">
+            <p class="dj-virtual-msg">Pesquise no catálogo offline. O que você quer ouvir?</p>
+            <input type="text" id="busca-musica" placeholder="Buscar artista ou música..." onkeyup="filtrarCatalogo()">
+            <div id="lista-catalogo">
+                <p style="color:#666; font-size:0.8em;">(Aguardando o script do DJ enviar o catálogo...)</p>
+            </div>
+            <button style="background: #444; margin-top:20px;" onclick="mostrarModalNaoEncontrei()">Não encontrei minha música</button>
+        </div>
+
+        <!-- Aba: Fila e Histórico -->
+        <div id="aba-fila" class="hidden" style="margin-top: 20px;">
+            <h4>Fila Ao Vivo</h4>
+            <div id="lista-fila">Nenhuma música na fila ainda.</div>
+            <hr style="border-color: #333; margin: 20px 0;">
+            <h4>Já Rolou</h4>
+            <div id="lista-historico">Nenhuma música tocou ainda.</div>
+        </div>
+    </div>
+
+    <!-- Script do Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let meuNome = localStorage.getItem('vdj_nome');
+        
+        // Verifica Autenticação
+        if (meuNome) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('saudacao').innerText = `E aí, ${meuNome}!`;
+        }
+
+        function entrarNaFesta() {
+            const nomeInput = document.getElementById('nome-usuario').value.trim();
+            if (nomeInput.length > 2) {
+                localStorage.setItem('vdj_nome', nomeInput);
+                location.reload(); // Recarrega para aplicar a sessão
+            } else {
+                alert("Digite um nome válido!");
+            }
+        }
+
+        function mudarAba(aba) {
+            if (aba === 'pedir') {
+                document.getElementById('aba-pedir').classList.remove('hidden');
+                document.getElementById('aba-fila').classList.add('hidden');
+                document.getElementById('btn-tab-pedir').classList.add('active');
+                document.getElementById('btn-tab-fila').classList.remove('active');
+            } else {
+                document.getElementById('aba-pedir').classList.add('hidden');
+                document.getElementById('aba-fila').classList.remove('hidden');
+                document.getElementById('btn-tab-pedir').classList.remove('active');
+                document.getElementById('btn-tab-fila').classList.add('active');
+            }
+        }
+
+        function mostrarModalNaoEncontrei() {
+            alert("🤖 DJ Virtual: Nosso catálogo é offline para garantir a qualidade! Se não achou sua música, vá até a cabine bater um papo com o DJ presencialmente para avaliarmos.");
+        }
+
+        // Recebe o catálogo físico atualizado pelo Python
+        socket.on('update_biblioteca', (catalogo) => {
+            // A lógica visual de renderizar a lista de buscas virá aqui assim que o Python estiver rodando
+            document.getElementById('lista-catalogo').innerHTML = `<p style="color:#4ade80;">Catálogo sincronizado com sucesso!</p>`;
+        });
+
+        // Recebe a Fila em Tempo Real do Servidor
+        socket.on('sync_state', (estado) => {
+            const divFila = document.getElementById('lista-fila');
+            divFila.innerHTML = '';
+            if (estado.filaPista.length === 0) {
+                divFila.innerHTML = '<p style="color:#666;">Fila vazia. Seja o primeiro!</p>';
+                return;
+            }
+            
+            estado.filaPista.forEach((pedido, index) => {
+                // Cálculo de ETA (Tempo Estimado) - PRD 3.4
+                let etaMsg = index === 0 ? "Próxima a tocar" : `~${index * 3} minutos`;
+                
+                divFila.innerHTML += `
+                    <div class="card">
+                        <strong>${pedido.musica}</strong><br>
+                        <small>Pedido por: ${pedido.nome} | ⏳ ${etaMsg}</small>
+                    </div>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>

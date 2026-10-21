@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Admin Master</title>
+    <style>
+        body { font-family: sans-serif; background: #0a0a0a; color: #fff; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .status-dot { height: 15px; width: 15px; background-color: red; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .status-dot.online { background-color: #4ade80; }
+        .dashboard { display: flex; gap: 20px; margin-top: 20px; }
+        .coluna { flex: 1; background: #1a1a1a; padding: 15px; border-radius: 8px; border-top: 4px solid #e63946; }
+        .card { background: #2a2a2a; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-acao { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
+        .btn-acao:hover { background: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>🎛️ Centro de Comando</h2>
+        <div>
+            <!-- PRD 7.3 - Status da Cabine -->
+            <span id="luz-status" class="status-dot"></span>
+            <span id="texto-status">Python (Cabine) Offline</span>
+        </div>
+    </div>
+
+    <!-- PRD 7.1 - Dashboard Split -->
+    <div class="dashboard">
+        <div class="coluna">
+            <h3>🎵 Fila da Pista</h3>
+            <div id="admin-pista">Carregando dados via WebSocket...</div>
+        </div>
+        <div class="coluna" style="border-top-color: #457b9d;">
+            <h3>🎤 Fila Karaokê (The Voice)</h3>
+            <div id="admin-karaoke">Carregando dados via WebSocket...</div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Escuta o sincronismo de estado do servidor em tempo real
+        socket.on('sync_state', (estado) => {
+            renderizarFila('admin-pista', estado.filaPista);
+            renderizarFila('admin-karaoke', estado.filaKaraoke);
+        });
+
+        // Simula a escuta do Python conectando para acender a luz do Status da Cabine
+        socket.on('python_status', (online) => {
+            const luz = document.getElementById('luz-status');
+            const texto = document.getElementById('texto-status');
+            if (online) {
+                luz.classList.add('online');
+                texto.innerText = "Python (Cabine) ONLINE";
+            } else {
+                luz.classList.remove('online');
+                texto.innerText = "Python (Cabine) Offline";
+            }
+        });
+
+        function renderizarFila(elementoId, dados) {
+            const div = document.getElementById(elementoId);
+            div.innerHTML = '';
+            if (dados.length === 0) {
+                div.innerHTML = '<p style="color:#666;">Fila vazia no momento.</p>';
+                return;
+            }
+            dados.forEach(pedido => {
+                div.innerHTML += `
+                    <div class="card">
+                        <div>
+                            <strong>${pedido.musica}</strong><br>
+                            <small>Pedido por: ${pedido.nome} | Hora: ${pedido.hora}</small>
+                        </div>
+                        <div>
+                            <!-- PRD 7.4 - Controles Master -->
+                            <button class="btn-acao">Forçar Baixa</button>
+                            <button class="btn-acao" style="color: #e63946;">Excluir</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
