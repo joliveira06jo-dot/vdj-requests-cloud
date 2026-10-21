@@ -14,27 +14,21 @@ app.use(express.static('public'));
 let dbBiblioteca = []; 
 let filaPista = [];
 let filaKaraoke = [];
+let historicoJaRolou = [];
 
 io.on('connection', (socket) => {
-    console.log(`[+] Nova conexão: ${socket.id}`);
-
-    // Envia o estado atual e a biblioteca imediatamente para o cliente que conectou
-    socket.emit('sync_state', { filaPista, filaKaraoke });
+    socket.emit('sync_state', { filaPista, filaKaraoke, historicoJaRolou });
     if (dbBiblioteca.length > 0) {
         socket.emit('update_biblioteca', dbBiblioteca);
     }
 
-    // Python envia o catálogo varrido do HD
     socket.on('update_biblioteca', (dados) => {
         if (dados && dados.length > 0) {
             dbBiblioteca = dados;
-            console.log(`[!] Biblioteca atualizada: ${dbBiblioteca.length} faixas.`);
-            // Repassa o catálogo para todos os app dos convidados conectados
             io.emit('update_biblioteca', dbBiblioteca);
         }
     });
 
-    // Convidado envia um novo pedido com o caminho físico embutido
     socket.on('novo_pedido', (pedido) => {
         if (pedido.tipo === 'karaoke') {
             filaKaraoke.push(pedido);
@@ -46,14 +40,33 @@ io.on('connection', (socket) => {
             }
             filaPista.push(pedido);
         }
-        io.emit('sync_state', { filaPista, filaKaraoke });
+        io.emit('sync_state', { filaPista, filaKaraoke, historicoJaRolou });
     });
 
-    // Ações do Admin Master
+    // Baixa automática enviada pelo Python quando o VirtualDJ executa a música
+    socket.on('musica_tocada', (dados) => {
+        const index = filaPista.findIndex(p => p.caminho === dados.caminho || p.musica.toLowerCase() === dados.musica.toLowerCase());
+        if (index !== -1) {
+            const [itemTocado] = filaPista.splice(index, 1);
+            itemTocado.horaTocada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            historicoJaRolou.unshift(itemTocado);
+            if (historicoJaRolou.length > 20) historicoJaRolou.pop();
+            io.emit('sync_state', { filaPista, filaKaraoke, historicoJaRolou });
+        }
+    });
+
     socket.on('admin_acao', ({ tipo, index }) => {
-        if (tipo === 'pista') filaPista.splice(index, 1);
-        else if (tipo === 'karaoke') filaKaraoke.splice(index, 1);
-        io.emit('sync_state', { filaPista, filaKaraoke });
+        if (tipo === 'pista') {
+            const [removido] = filaPista.splice(index, 1);
+            if (removido) {
+                removido.horaTocada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                historicoJaRolou.unshift(removido);
+                if (historicoJaRolou.length > 20) historicoJaRolou.pop();
+            }
+        } else if (tipo === 'karaoke') {
+            filaKaraoke.splice(index, 1);
+        }
+        io.emit('sync_state', { filaPista, filaKaraoke, historicoJaRolou });
     });
 });
 
