@@ -16,42 +16,52 @@ let filaPista = [];
 let filaKaraoke = [];
 
 io.on('connection', (socket) => {
-    console.log(`[+] Nova conexão estabelecida: ${socket.id}`);
+    console.log(`[+] Nova conexão: ${socket.id}`);
 
-    // Envia o estado atual e a biblioteca imediatamente para quem conectar
+    // Sincroniza estados iniciais
     socket.emit('sync_state', { filaPista, filaKaraoke });
     if (dbBiblioteca.length > 0) {
         socket.emit('update_biblioteca', dbBiblioteca);
     }
 
-    // Python envia o catálogo do HD
+    // Recebe o catálogo do Python
     socket.on('update_biblioteca', (dados) => {
         if (dados && dados.length > 0) {
             dbBiblioteca = dados;
-            console.log(`[!] Biblioteca física recebida: ${dbBiblioteca.length} faixas.`);
             io.emit('update_biblioteca', dbBiblioteca);
         }
     });
 
-    // Convidado envia um novo pedido
+    // Novo pedido (Pista ou Karaokê)
     socket.on('novo_pedido', (pedido) => {
-        const jaExiste = filaPista.some(p => p.musica.toLowerCase() === pedido.musica.toLowerCase());
-        if (jaExiste) {
-            socket.emit('erro_pedido', 'Esta música já está na fila de espera!');
-            return;
-        }
-
         if (pedido.tipo === 'karaoke') {
             filaKaraoke.push(pedido);
+            console.log(`[🎤] Novo Karaokê: ${pedido.musica} por ${pedido.nome}`);
         } else {
+            const jaExiste = filaPista.some(p => p.musica.toLowerCase() === pedido.musica.toLowerCase());
+            if (jaExiste) {
+                socket.emit('erro_pedido', 'Esta música já está na fila de espera!');
+                return;
+            }
             filaPista.push(pedido);
+            console.log(`[🎵] Nova Pista: ${pedido.musica} por ${pedido.nome}`);
         }
         
         io.emit('sync_state', { filaPista, filaKaraoke });
     });
 
+    // Ações do Admin Master (Excluir ou Concluir)
+    socket.on('admin_acao', ({ tipo, index }) => {
+        if (tipo === 'pista') {
+            filaPista.splice(index, 1);
+        } else if (tipo === 'karaoke') {
+            filaKaraoke.splice(index, 1);
+        }
+        io.emit('sync_state', { filaPista, filaKaraoke });
+    });
+
     socket.on('disconnect', () => {
-        console.log(`[-] Conexão encerrada: ${socket.id}`);
+        console.log(`[-] Desconectado: ${socket.id}`);
     });
 });
 
