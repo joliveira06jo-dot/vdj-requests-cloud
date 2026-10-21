@@ -18,13 +18,12 @@ let filaKaraoke = [];
 io.on('connection', (socket) => {
     console.log(`[+] Nova conexão: ${socket.id}`);
 
-    // Sincroniza estados iniciais
+    // Envia estado atual imediatamente para qualquer cliente (Admin ou App)
     socket.emit('sync_state', { filaPista, filaKaraoke });
     if (dbBiblioteca.length > 0) {
         socket.emit('update_biblioteca', dbBiblioteca);
     }
 
-    // Recebe o catálogo do Python
     socket.on('update_biblioteca', (dados) => {
         if (dados && dados.length > 0) {
             dbBiblioteca = dados;
@@ -32,11 +31,9 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Novo pedido (Pista ou Karaokê)
     socket.on('novo_pedido', (pedido) => {
         if (pedido.tipo === 'karaoke') {
             filaKaraoke.push(pedido);
-            console.log(`[🎤] Novo Karaokê: ${pedido.musica} por ${pedido.nome}`);
         } else {
             const jaExiste = filaPista.some(p => p.musica.toLowerCase() === pedido.musica.toLowerCase());
             if (jaExiste) {
@@ -44,13 +41,10 @@ io.on('connection', (socket) => {
                 return;
             }
             filaPista.push(pedido);
-            console.log(`[🎵] Nova Pista: ${pedido.musica} por ${pedido.nome}`);
         }
-        
         io.emit('sync_state', { filaPista, filaKaraoke });
     });
 
-    // Ações do Admin Master (Excluir ou Concluir)
     socket.on('admin_acao', ({ tipo, index }) => {
         if (tipo === 'pista') {
             filaPista.splice(index, 1);
@@ -67,5 +61,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`🚀 Cérebro Node.js operando na porta ${PORT}`);
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
