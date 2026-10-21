@@ -7,34 +7,30 @@
     <style>
         body { font-family: sans-serif; background: #0a0a0a; color: #fff; margin: 0; padding: 20px; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        .status-dot { height: 15px; width: 15px; background-color: red; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .status-dot.online { background-color: #4ade80; }
+        .status-dot { height: 15px; width: 15px; background-color: #4ade80; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .dashboard { display: flex; gap: 20px; margin-top: 20px; }
         .coluna { flex: 1; background: #1a1a1a; padding: 15px; border-radius: 8px; border-top: 4px solid #e63946; }
         .card { background: #2a2a2a; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-acao { background: #333; color: white; border: 1px solid #555; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; }
-        .btn-acao:hover { background: #555; }
-        .btn-excluir { background: #e63946; border: none; }
+        .btn-acao { background: #e63946; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <h2>🎛️ Centro de Comando (Admin Master)</h2>
         <div>
-            <span id="luz-status" class="status-dot online"></span>
-            <span id="texto-status">Sistema Conectado</span>
+            <span class="status-dot"></span>
+            <span>Sistema Online</span>
         </div>
     </div>
 
     <div class="dashboard">
         <div class="coluna">
             <h3>🎵 Fila da Pista</h3>
-            <div id="admin-pista">Carregando...</div>
+            <div id="admin-pista">Sincronizando...</div>
         </div>
         <div class="coluna" style="border-top-color: #457b9d;">
-            <h3>🎤 Fila Karaokê (The Voice Família)</h3>
-            <div id="admin-karaoke">Carregando...</div>
+            <h3>🎤 Fila Karaokê (The Voice)</h3>
+            <div id="admin-karaoke">Sincronizando...</div>
         </div>
     </div>
 
@@ -50,7 +46,7 @@
         function renderizarFilaAdmin(elementoId, dados, tipoFila) {
             const div = document.getElementById(elementoId);
             div.innerHTML = '';
-            if (dados.length === 0) {
+            if (!dados || dados.length === 0) {
                 div.innerHTML = '<p style="color:#666;">Fila vazia no momento.</p>';
                 return;
             }
@@ -62,7 +58,7 @@
                             <small>Artista: ${pedido.artista || 'Livre'} | Por: ${pedido.nome} | ⏰ ${pedido.hora}</small>
                         </div>
                         <div>
-                            <button class="btn-acao btn-excluir" onclick="removerPedido('${tipoFila}', ${index})">Excluir</button>
+                            <button class="btn-acao" onclick="removerPedido('${tipoFila}', ${index})">Excluir / Baixa</button>
                         </div>
                     </div>
                 `;
