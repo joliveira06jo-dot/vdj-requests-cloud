@@ -1,168 +1,66 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const axios = require('axios');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
-
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
-const DB_FILE = path.join(__dirname, 'estado.json');
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: "*" }
+});
 
-let estado = {
-    dbBiblioteca: [],
-    filaPista: [],
-    filaKaraoke: [],
-    historicoJaRolou: []
-};
+// Bancos de dados em memória
+let filaPista = [];
+let filaKaraoke = [];
 
-if (fs.existsSync(DB_FILE)) {
+// API: Busca de Capas no iTunes (Fallback quando o HD falhar)
+app.get('/api/cover', async (req, res) => {
+    const { artist, track } = req.query;
+    if (!artist || !track) return res.status(400).json({ erro: 'Parâmetros artist e track são obrigatórios' });
+
     try {
-        estado = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-        if (!estado.historicoJaRolou) estado.historicoJaRolou = [];
-    } catch (e) {
-        console.log("Criando novo banco de estado local.");
-    }
-}
+        const termo = encodeURIComponent(`${artist} ${track}`);
+        const resposta = await axios.get(`https://itunes.apple.com/search?term=${termo}&entity=song&limit=1`);
 
-function salvarEstado() {
-    try {
-        fs.writeFileSync(DB_FILE, JSON.stringify(estado, null, 2));
-    } catch (e) {
-        console.error("Erro ao salvar estado.json:", e);
+        if (resposta.data.results && resposta.data.results.length > 0) {
+            // Converte a miniatura de 100x100 para alta resolução (600x600)
+            let capaAltaRes = resposta.data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
+            return res.json({ url: capaAltaRes });
+        }
+        res.status(404).json({ erro: 'Capa não encontrada no iTunes' });
+    } catch (erro) {
+        res.status(500).json({ erro: 'Falha na comunicação com a Apple Music' });
     }
-}
+});
 
+// Comunicação em Tempo Real
 io.on('connection', (socket) => {
-    socket.emit('sync_state', { 
-        filaPista: estado.filaPista, 
-        filaKaraoke: estado.filaKaraoke, 
-        historicoJaRolou: estado.historicoJaRolou 
+    console.log(`Cliente conectado: ${socket.id}`);
+
+    // Eventos da Pista
+    socket.on('pedir_musica', (dados) => {
+        // Dispara o caminho físico para o bridge.py injetar no VirtualDJ
+        io.emit('novo_pedido', { caminho: dados.caminho });
+        filaPista.push(dados);
+        io.emit('atualizacao_fila', filaPista);
     });
 
-    if (estado.dbBiblioteca.length > 0) {
-        socket.emit('update_biblioteca', estado.dbBiblioteca);
-    }
-
-    socket.on('zerar_fila', () => {
-        console.log("[RESET] Comando de zerar fila recebido do bridge. Zerando pedidos da pista...");
-        estado.filaPista = [];
-        salvarEstado();
-        io.emit('sync_state', { 
-            filaPista: estado.filaPista, 
-            filaKaraoke: estado.filaKaraoke, 
-            historicoJaRolou: estado.historicoJaRolou 
-        });
+    // Eventos do The Voice Família
+    socket.on('pedir_karaoke', (dados) => {
+        filaKaraoke.push(dados);
+        io.emit('atualizacao_karaoke', filaKaraoke);
     });
 
-    socket.on('update_biblioteca', (dados) => {
-        if (dados && dados.length > 0) {
-            estado.dbBiblioteca = dados;
-            salvarEstado();
-            io.emit('update_biblioteca', estado.dbBiblioteca);
-        }
-    });
-
-    socket.on('novo_pedido', (pedido) => {
-        if (pedido.tipo === 'karaoke') {
-            estado.filaKaraoke.push(pedido);
-        } else {
-            const jaExiste = estado.filaPista.some(p => p.musica.toLowerCase() === pedido.musica.toLowerCase());
-            if (jaExiste) {
-                socket.emit('erro_pedido', 'Esta música já está na fila de espera!');
-                return;
-            }
-            estado.filaPista.push(pedido);
-        }
-        salvarEstado();
-        io.emit('sync_state', { 
-            filaPista: estado.filaPista, 
-            filaKaraoke: estado.filaKaraoke, 
-            historicoJaRolou: estado.historicoJaRolou 
-        });
-    });
-
-    socket.on('restaurar_fila', (filaLocal) => {
-        if (estado.filaPista.length === 0 && filaLocal && filaLocal.length > 0) {
-            console.log("[RECUPERAÇÃO] Restaurando fila local enviada pela ponte Python.");
-            estado.filaPista = filaLocal;
-            salvarEstado();
-            io.emit('sync_state', { 
-                filaPista: estado.filaPista, 
-                filaKaraoke: estado.filaKaraoke, 
-                historicoJaRolou: estado.historicoJaRolou 
-            });
-        }
-    });
-
-    socket.on('musica_tocada', (dados) => {
-        const index = estado.filaPista.findIndex(p => p.caminho === dados.caminho || p.musica.toLowerCase() === dados.musica.toLowerCase());
-        if (index !== -1) {
-            const [itemTocado] = estado.filaPista.splice(index, 1);
-            itemTocado.horaTocada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            estado.historicoJaRolou.unshift(itemTocado);
-            if (estado.historicoJaRolou.length > 30) estado.historicoJaRolou.pop();
-            salvarEstado();
-            io.emit('sync_state', { 
-                filaPista: estado.filaPista, 
-                filaKaraoke: estado.filaKaraoke, 
-                historicoJaRolou: estado.historicoJaRolou 
-            });
-        }
-    });
-
-    socket.on('musica_tocada_dj', (dados) => {
-        const horaAtual = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const itemDJ = {
-            musica: dados.musica,
-            artista: dados.artista,
-            nome: 'Seleção do DJ',
-            horaTocada: horaAtual
-        };
-
-        const jaExisteRecente = estado.historicoJaRolou.some(h => 
-            h.musica.toLowerCase() === itemDJ.musica.toLowerCase() && h.horaTocada === horaAtual
-        );
-
-        if (!jaExisteRecente) {
-            estado.historicoJaRolou.unshift(itemDJ);
-            if (estado.historicoJaRolou.length > 30) estado.historicoJaRolou.pop();
-            salvarEstado();
-            io.emit('sync_state', { 
-                filaPista: estado.filaPista, 
-                filaKaraoke: estado.filaKaraoke, 
-                historicoJaRolou: estado.historicoJaRolou 
-            });
-        }
-    });
-
-    socket.on('admin_acao', ({ tipo, index }) => {
-        if (tipo === 'pista') {
-            const [removido] = estado.filaPista.splice(index, 1);
-            if (removido) {
-                removido.horaTocada = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                estado.historicoJaRolou.unshift(removido);
-                if (estado.historicoJaRolou.length > 30) estado.historicoJaRolou.pop();
-            }
-        } else if (tipo === 'karaoke') {
-            estado.filaKaraoke.splice(index, 1);
-        }
-        salvarEstado();
-        io.emit('sync_state', { 
-            filaPista: estado.filaPista, 
-            filaKaraoke: estado.filaKaraoke, 
-            historicoJaRolou: estado.historicoJaRolou 
-        });
+    socket.on('disconnect', () => {
+        console.log(`Cliente desconectado: ${socket.id}`);
     });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`🚀 Servidor VDJ Requests operando na porta ${PORT}`);
+    console.log(`Servidor Node.js rodando na porta ${PORT}`);
 });
