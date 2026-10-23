@@ -20,26 +20,21 @@
             padding: 0;
         }
         input:focus { outline: none; }
-        
-        /* CSS Nativo blindado para garantir o carregamento do fundo */
-        .fundo-pista { background-image: url('./fundo-app.png'); }
-        .fundo-karaoke { background-image: url('./fundo-thevoice-app.png'); }
-        .fundo-base {
-            background-size: cover;
-            background-position: center top;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            min-height: 100vh;
-        }
     </style>
 </head>
 <body>
-    <div id="app" :class="temaAtual === 'karaoke' ? 'fundo-karaoke' : 'fundo-pista'" class="fundo-base max-w-md mx-auto p-5 relative flex flex-col transition-all duration-700">
+    <div id="app" class="max-w-md mx-auto relative min-h-screen flex flex-col font-['Poppins']">
         
+        <!-- Fundo Físico Blindado -->
+        <img :src="temaAtual === 'karaoke' ? '/fundo-thevoice-app.png' : '/fundo-app.png'" class="fixed inset-0 w-full h-full object-cover -z-10 transition-opacity duration-500" alt="Fundo">
+        
+        <!-- Camada de Escurecimento opcional para dar leitura (desativada por padrão, útil se o fundo for muito claro) -->
+        <div class="fixed inset-0 bg-black/10 -z-10"></div>
+
         <!-- TELA 1: CADASTRO -->
-        <div v-if="telaAtual === 'cadastro'" class="flex flex-col items-center justify-center flex-1 py-4">
+        <div v-if="telaAtual === 'cadastro'" class="flex flex-col items-center justify-center flex-1 w-full px-5 py-8">
             <div class="mb-10 w-full flex justify-center">
-                <img src="./logo-vdj.png" alt="VirtualDJ" class="w-full max-w-[240px] object-contain drop-shadow-xl">
+                <img src="/logo-vdj.png" alt="VirtualDJ" class="w-[240px] object-contain drop-shadow-2xl">
             </div>
 
             <div class="bg-[#222222] rounded-[2rem] p-7 w-full shadow-2xl">
@@ -55,7 +50,6 @@
                     <label class="inline-flex items-center justify-center w-[110px] h-[110px] bg-white text-black rounded-[2rem] cursor-pointer relative overflow-hidden transition-transform active:scale-95 shadow-lg">
                         <input type="file" class="hidden" @change="processarFoto" accept="image/*">
                         <img v-if="fotoPreview" :src="fotoPreview" class="absolute inset-0 w-full h-full object-cover">
-                        <!-- Ícone de Upload idêntico ao protótipo Canva -->
                         <svg v-else class="w-10 h-10 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                         </svg>
@@ -71,13 +65,11 @@
         </div>
 
         <!-- TELA 2: PRINCIPAL (PISTA) -->
-        <div v-if="telaAtual === 'principal'" class="pb-8">
-            <!-- Header -->
-            <div class="flex justify-between items-center mb-6 pt-2">
-                <div class="flex-1 flex justify-center pl-16">
-                    <img src="./logo-vdj.png" alt="VirtualDJ" class="w-full max-w-[200px] object-contain drop-shadow-xl">
-                </div>
-                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="w-[52px] h-[52px] rounded-full object-cover border-2 border-white/20 cursor-pointer shadow-xl">
+        <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-8 pt-4">
+            <!-- Header (Logo perfeitamente centralizado com a foto flutuando à direita) -->
+            <div class="relative flex justify-center items-center mb-8">
+                <img src="/logo-vdj.png" alt="VirtualDJ" class="w-[240px] object-contain drop-shadow-2xl">
+                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-0 w-[52px] h-[52px] rounded-full object-cover border-2 border-white/20 cursor-pointer shadow-xl">
             </div>
 
             <!-- Botão CTA -->
@@ -118,7 +110,7 @@
                             <div class="text-center px-3 border-l border-[#d0d0d0]">
                                 <p class="text-[8px] font-bold text-gray-500 leading-none uppercase">posição</p>
                                 <p class="font-black text-[22px] leading-none my-1">{{ index + 2 }}</p>
-                                <p class="text-[8px] font-bold text-gray-500 leading-none uppercase">no deck do dj</p>
+                                <p class="text-[8px] font-bold text-gray-500 leading-none uppercase">no deck</p>
                             </div>
                         </div>
                     </div>
