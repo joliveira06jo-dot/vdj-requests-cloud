@@ -3,26 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AskToDJ</title>
+    <title>Pedidos VirtualDJ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #09090b; color: white; overscroll-behavior-y: none; }
-        .bg-app { background: radial-gradient(circle at top, #4c1d95 0%, #09090b 50%); min-height: 100vh; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #000; color: white; overscroll-behavior-y: none; }
         input:focus { outline: none; }
     </style>
 </head>
-<body class="bg-app">
-    <div id="app" class="max-w-md mx-auto p-5 relative min-h-screen">
+<body>
+    <!-- O Vue controla o fundo da tela inteira dinamicamente -->
+    <div id="app" :class="temaAtual === 'karaoke' ? 'bg-[url(/fundo-thevoice-app.png)]' : 'bg-[url(/fundo-app.png)]'" class="max-w-md mx-auto p-5 relative min-h-screen bg-cover bg-center bg-no-repeat bg-fixed transition-all duration-500">
         
         <!-- TELA 1: CADASTRO -->
         <div v-if="telaAtual === 'cadastro'" class="flex flex-col items-center justify-center pt-8 pb-10 h-full">
-            <div class="mb-10 text-center">
-                <h1 class="text-4xl font-extrabold bg-white text-black px-4 py-1 rounded inline-block tracking-tighter">VIRTUAL<span class="text-red-600">DJ</span></h1>
-                <div class="mt-3">
-                    <span class="text-[11px] font-bold text-yellow-400 border border-yellow-400 rounded-full px-3 py-1">⚡ Automação em Tempo Real</span>
-                </div>
+            <div class="mb-10 text-center flex flex-col items-center">
+                <img src="/logo-vdj.png" alt="VirtualDJ" class="h-16 object-contain mb-2">
             </div>
 
             <div class="bg-[#18181b] rounded-[2rem] p-7 w-full shadow-2xl">
@@ -52,19 +49,16 @@
         <div v-if="telaAtual === 'principal'" class="pb-6">
             <!-- Header -->
             <div class="flex justify-between items-center mb-8 pt-2">
-                <div class="flex-1 text-center pl-10">
-                    <h1 class="text-2xl font-extrabold bg-white text-black px-3 py-0.5 rounded inline-block tracking-tighter">VIRTUAL<span class="text-red-600">DJ</span></h1>
-                    <div class="mt-1">
-                        <span class="text-[9px] font-bold text-yellow-400 border border-yellow-400 rounded-full px-2 py-0.5">⚡ Automação em Tempo Real</span>
-                    </div>
+                <div class="flex-1 flex justify-center pl-12">
+                    <img src="/logo-vdj.png" alt="VirtualDJ" class="h-10 object-contain">
                 </div>
-                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="w-12 h-12 rounded-full object-cover border-2 border-zinc-600 cursor-pointer shadow-lg" title="Editar Perfil">
+                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="w-14 h-14 rounded-full object-cover border-2 border-zinc-600 cursor-pointer shadow-lg">
             </div>
 
-            <!-- Botão CTA Pedir Música -->
-            <button @click="abrirBusca" class="w-full bg-zinc-100 text-black font-extrabold text-2xl py-5 rounded-[2rem] mb-8 flex justify-between items-center px-8 shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-transform active:scale-95">
+            <!-- Botão CTA -->
+            <button @click="abrirBusca" class="w-full bg-zinc-100 text-black font-extrabold text-2xl py-4 rounded-[2.5rem] mb-6 flex justify-between items-center px-8 shadow-lg transition-transform active:scale-95">
                 PEDIR MÚSICA
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                <svg class="w-8 h-8 bg-black text-white rounded-full p-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
             </button>
 
             <!-- Card Automix -->
@@ -86,7 +80,7 @@
                     <h3 class="text-center font-bold text-xl mb-4 tracking-tight">A seguir</h3>
                     
                     <div class="space-y-3 mb-6">
-                        <div v-for="(musica, index) in proximasMusicas" :key="index" class="bg-[#e4e4e7] text-black rounded-2xl p-2.5 flex items-center gap-3">
+                        <div v-for="(musica, index) in proximasMusicas" :key="index" class="bg-[#e4e4e7] text-black rounded-[1.5rem] p-3 flex items-center gap-3">
                             <img :src="musica.capa" class="w-16 h-16 rounded-xl object-cover shadow-sm bg-zinc-300">
                             <div class="flex-1 min-w-0">
                                 <h4 class="font-extrabold text-[15px] truncate tracking-tight">{{ musica.titulo }}</h4>
@@ -100,7 +94,7 @@
                         </div>
                     </div>
 
-                    <button @click="verProximas" class="w-full bg-[#09090b] border border-zinc-800 text-white font-extrabold text-lg py-3.5 rounded-[1.5rem] flex items-center justify-between px-6 transition-transform active:scale-95 shadow-md">
+                    <button @click="verProximas" class="w-full bg-[#09090b] border border-zinc-800 text-white font-extrabold text-lg py-3.5 rounded-[2rem] flex items-center justify-between px-6 transition-transform active:scale-95 shadow-md">
                         VER PRÓXIMAS
                         <svg class="w-7 h-7 bg-white text-black rounded-full p-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
                     </button>
@@ -113,20 +107,17 @@
     <script>
         const { createApp, ref, onMounted } = Vue;
         
-        // Configurações
-        const IMGBB_API_KEY = '5b0d512fa2132911bcdb68f224a8943b'; 
-        const SERVER_URL = 'https://vdj-requests-cloud.onrender.com';
+        const IMGBB_API_KEY = 'COLOQUE_A_SUA_CHAVE_AQUI'; 
 
         createApp({
             setup() {
                 const telaAtual = ref('cadastro');
+                const temaAtual = ref('pista'); // Controla o fundo
                 const nome = ref('');
                 const fotoUrl = ref('');
                 const fotoPreview = ref('');
                 const uploading = ref(false);
-                const socket = io(SERVER_URL);
 
-                // Dados provisórios para o front-end
                 const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
                 const proximasMusicas = ref([
                     { titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
@@ -154,10 +145,7 @@
                     formData.append('image', file);
 
                     try {
-                        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                            method: 'POST',
-                            body: formData
-                        });
+                        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
                         const data = await res.json();
                         if (data.success) fotoUrl.value = data.data.url;
                     } catch (e) {
@@ -174,11 +162,15 @@
                     telaAtual.value = 'principal';
                 };
 
-                const abrirBusca = () => alert('Mock: Transição para Tela de Busca');
+                const abrirBusca = () => {
+                    // Para testar a troca de fundo futuramente:
+                    // temaAtual.value = 'karaoke';
+                    alert('Mock: Transição para Tela de Busca');
+                };
                 const verProximas = () => alert('Mock: Transição para Fila Expandida');
 
                 return {
-                    telaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
+                    telaAtual, temaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
                     tocandoAgora, proximasMusicas, abrirBusca, verProximas
                 }
             }
