@@ -2,292 +2,187 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VirtualDJ Requests 2.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AskToDJ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #0b1120; color: #f8fafc; padding: 15px; text-align: center; }
-        .hidden { display: none !important; }
-        
-        .header-logo { margin: 10px 0 15px; }
-        .header-logo h1 { color: #38bdf8; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
-        .header-logo p { color: #94a3b8; font-size: 0.85rem; margin-top: 4px; }
-        .ia-tag { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; display: inline-block; margin-top: 6px; }
-
-        .mode-selector { display: flex; gap: 10px; margin: 15px 0; justify-content: center; }
-        .mode-card { flex: 1; background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 12px 8px; cursor: pointer; transition: all 0.2s ease; }
-        .mode-card.active { border-color: #38bdf8; background: rgba(56, 189, 248, 0.15); }
-        .mode-card span { display: block; font-size: 1.4rem; margin-bottom: 4px; }
-        .mode-card strong { font-size: 0.8rem; color: #f8fafc; text-transform: uppercase; }
-
-        .sub-nav { display: flex; gap: 6px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 4px; }
-        .sub-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap; flex: 1; }
-        .sub-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; font-weight: 800; }
-
-        .section-box { background: #1e293b; border-radius: 12px; padding: 15px; border: 1px solid #334155; text-align: left; }
-        .section-title { color: #38bdf8; font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; border-bottom: 1px solid #334155; padding-bottom: 6px; }
-
-        input[type="text"] { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; font-size: 0.9rem; margin-bottom: 10px; outline: none; }
-        input[type="text"]:focus { border-color: #38bdf8; }
-
-        .btn-submit { width: 100%; padding: 12px; background: #38bdf8; color: #0f172a; font-weight: 800; border: none; border-radius: 8px; font-size: 0.95rem; cursor: pointer; text-transform: uppercase; margin-top: 5px; }
-        .btn-submit:active { transform: scale(0.98); }
-
-        .item-catalogo { background: #0f172a; padding: 10px 12px; margin: 6px 0; border-radius: 8px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
-        .item-info strong { color: #f8fafc; font-size: 0.9rem; display: block; }
-        .item-info small { color: #94a3b8; font-size: 0.8rem; }
-        .btn-pedir-item { background: #38bdf8; color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
-
-        .card-pedido { background: #0f172a; padding: 12px; border-radius: 8px; border-left: 4px solid #38bdf8; margin-bottom: 8px; }
-        .card-pedido.karaoke { border-left-color: #a855f7; }
-        .card-pedido.jarolou { border-left-color: #22c55e; }
-        .card-pedido strong { color: #f8fafc; font-size: 0.9rem; }
-        .card-pedido p { color: #94a3b8; font-size: 0.8rem; margin-top: 2px; }
-
-        .filtro-btn { background: #0f172a; color: #94a3b8; border: 1px solid #334155; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; margin-bottom: 10px; cursor: pointer; }
-        .filtro-btn.ativo { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-color: #38bdf8; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #09090b; color: white; overscroll-behavior-y: none; }
+        .bg-app { background: radial-gradient(circle at top, #4c1d95 0%, #09090b 50%); min-height: 100vh; }
+        input:focus { outline: none; }
     </style>
 </head>
-<body>
-
-    <div id="login-screen" style="max-width: 400px; margin: 40px auto 0;">
-        <div class="header-logo">
-            <h1>VirtualDJ</h1>
-            <p>Você quem manda na pista!</p>
-        </div>
-        <div class="section-box">
-            <label style="color:#94a3b8; font-size:0.8rem; display:block; margin-bottom:6px;">SEU NOME OU APELIDO</label>
-            <input type="text" id="nome-usuario" placeholder="Ex: Julio Oliveira">
-            <button class="btn-submit" onclick="entrarNaFesta()">Entrar na Festa 🚀</button>
-        </div>
-    </div>
-
-    <div id="app-screen" class="hidden" style="max-width: 500px; margin: 0 auto;">
-        <div class="header-logo">
-            <h1>VirtualDJ</h1>
-            <p id="saudacao">Você quem manda na pista!</p>
-            <span class="ia-tag">⚡ Automação em Tempo Real</span>
-        </div>
-
-        <div class="mode-selector">
-            <div class="mode-card active" id="card-mode-pista" onclick="selecionarModo('pista')">
-                <span>🎵</span>
-                <strong>Pedir Música</strong>
+<body class="bg-app">
+    <div id="app" class="max-w-md mx-auto p-5 relative min-h-screen">
+        
+        <!-- TELA 1: CADASTRO -->
+        <div v-if="telaAtual === 'cadastro'" class="flex flex-col items-center justify-center pt-8 pb-10 h-full">
+            <div class="mb-10 text-center">
+                <h1 class="text-4xl font-extrabold bg-white text-black px-4 py-1 rounded inline-block tracking-tighter">VIRTUAL<span class="text-red-600">DJ</span></h1>
+                <div class="mt-3">
+                    <span class="text-[11px] font-bold text-yellow-400 border border-yellow-400 rounded-full px-3 py-1">⚡ Automação em Tempo Real</span>
+                </div>
             </div>
-            <div class="mode-card" id="card-mode-karaoke" onclick="selecionarModo('karaoke')">
-                <span>🎤</span>
-                <strong>Pedir Karaokê</strong>
+
+            <div class="bg-[#18181b] rounded-[2rem] p-7 w-full shadow-2xl">
+                <label class="block text-center text-sm font-bold text-zinc-300 mb-3 tracking-wide">INSIRA O SEU NOME</label>
+                <input v-model="nome" type="text" class="w-full bg-white text-black px-4 py-4 rounded-xl mb-8 text-center text-xl font-bold" placeholder="">
+
+                <div class="border-t border-zinc-700 pt-6 mb-6 text-center">
+                    <label class="block text-sm font-bold text-zinc-300 mb-1 tracking-wide">ESCOLHA UMA FOTO PARA<br>APARECER NO TELÃO</label>
+                    <p class="text-[11px] text-zinc-500 mb-5 leading-tight mt-2">*Opcional<br>Atenção: Se você não subir uma foto agora, saiba que não será possível carregar a foto depois.</p>
+                    
+                    <label class="inline-flex items-center justify-center w-28 h-28 bg-white text-black rounded-2xl cursor-pointer relative overflow-hidden transition-transform active:scale-95 shadow-lg">
+                        <input type="file" class="hidden" @change="processarFoto" accept="image/*">
+                        <img v-if="fotoPreview" :src="fotoPreview" class="absolute inset-0 w-full h-full object-cover">
+                        <svg v-else class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <div v-if="uploading" class="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-xs font-bold">Enviando...</div>
+                    </label>
+                </div>
+
+                <button @click="avancar" :disabled="!nome || uploading" class="w-full bg-zinc-200 text-black font-extrabold text-lg py-4 rounded-[1.5rem] mt-2 disabled:opacity-30 flex items-center justify-center gap-2 transition-transform active:scale-95">
+                    AVANÇAR
+                    <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                </button>
             </div>
         </div>
 
-        <div class="sub-nav">
-            <button class="sub-btn active" id="btn-sub-acao" onclick="trocarAba('acao')">🎵 Pedir Agora</button>
-            <button class="sub-btn" id="btn-sub-fila" onclick="trocarAba('fila')">📋 Fila de Espera</button>
-            <button class="sub-btn" id="btn-sub-jarolou" onclick="trocarAba('jarolou')">📜 Já Rolou</button>
-        </div>
-
-        <!-- ABA 1: AÇÃO DE PEDIR (PISTA) -->
-        <div id="aba-pista-pedir" class="section-box">
-            <div class="section-title">Pedir Música para a Pista</div>
-            <input type="text" id="busca-musica" placeholder="Pesquisar artista ou música no catálogo..." onkeyup="filtrarCatalogo()">
-            <div id="lista-catalogo" style="max-height: 320px; overflow-y: auto;"></div>
-        </div>
-
-        <!-- ABA 2: AÇÃO DE PEDIR (KARAOKÊ) -->
-        <div id="aba-karaoke-pedir" class="section-box hidden">
-            <div class="section-title" style="color: #a855f7;">Pedir Karaokê (The Voice)</div>
-            <p style="color:#94a3b8; font-size:0.8rem; margin-bottom:10px;">Guarde seu nome e música na geladeira para a hora do show!</p>
-            <input type="text" id="karaoke-artista" placeholder="Nome do Artista / Banda">
-            <input type="text" id="karaoke-musica" placeholder="Nome da Música">
-            <button class="btn-submit" style="background:#a855f7; color:#fff;" onclick="enviarKaraoke()">Guardar na Geladeira 🎤</button>
-        </div>
-
-        <!-- ABA 3: FILA (DINÂMICA PISTA OU KARAOKÊ) -->
-        <div id="aba-fila" class="section-box hidden">
-            <div class="section-title" id="titulo-fila">Fila de Espera</div>
-            <button class="filtro-btn" id="btn-filtro-meus" onclick="toggleFiltroMeus()">Ver apenas os meus pedidos</button>
-            <div id="conteudo-fila">Nenhum pedido na fila.</div>
-        </div>
-
-        <!-- ABA 4: JÁ ROLOU -->
-        <div id="aba-jarolou" class="section-box hidden">
-            <div class="section-title" style="color: #22c55e;">Músicas Que Já Tocarão</div>
-            <div id="conteudo-jarolou">Nenhuma música executada ainda.</div>
-        </div>
-    </div>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        let meuNome = localStorage.getItem('vdj_nome');
-        let modoAtual = 'pista'; // 'pista' ou 'karaoke'
-        let abaAtiva = 'acao';  // 'acao', 'fila', 'jarolou'
-        let catalogoGlobal = [];
-        let estadoGlobal = { filaPista: [], filaKaraoke: [], historicoJaRolou: [] };
-        let apenasMeus = false;
-
-        if (meuNome) {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            document.getElementById('saudacao').innerText = `E aí, ${meuNome}! Escolha suas músicas.`;
-        }
-
-        function entrarNaFesta() {
-            const nomeInput = document.getElementById('nome-usuario').value.trim();
-            if (nomeInput.length >= 2) {
-                localStorage.setItem('vdj_nome', nomeInput);
-                location.reload();
-            } else {
-                alert("Digite um nome válido!");
-            }
-        }
-
-        function selecionarModo(modo) {
-            modoAtual = modo;
-            document.getElementById('card-mode-pista').classList.toggle('active', modo === 'pista');
-            document.getElementById('card-mode-karaoke').classList.toggle('active', modo === 'karaoke');
-            
-            document.getElementById('btn-sub-acao').innerText = modo === 'pista' ? '🎵 Pedir Agora' : '🎤 Pedir Karaokê';
-            
-            trocarAba(abaAtiva);
-        }
-
-        function trocarAba(aba) {
-            abaAtiva = aba;
-            ['btn-sub-acao', 'btn-sub-fila', 'btn-sub-jarolou'].forEach(id => document.getElementById(id).classList.remove('active'));
-            ['aba-pista-pedir', 'aba-karaoke-pedir', 'aba-fila', 'aba-jarolou'].forEach(id => document.getElementById(id).classList.add('hidden'));
-
-            if (aba === 'acao') {
-                document.getElementById('btn-sub-acao').classList.add('active');
-                if (modoAtual === 'pista') document.getElementById('aba-pista-pedir').classList.remove('hidden');
-                else document.getElementById('aba-karaoke-pedir').classList.remove('hidden');
-            } else if (aba === 'fila') {
-                document.getElementById('btn-sub-fila').classList.add('active');
-                document.getElementById('aba-fila').classList.remove('hidden');
-                renderizarFilas();
-            } else if (aba === 'jarolou') {
-                document.getElementById('btn-sub-jarolou').classList.add('active');
-                document.getElementById('aba-jarolou').classList.remove('hidden');
-                renderizarFilas();
-            }
-        }
-
-        socket.on('update_biblioteca', (catalogo) => {
-            catalogoGlobal = catalogo;
-            renderizarCatalogo(catalogo);
-        });
-
-        function renderizarCatalogo(lista) {
-            const div = document.getElementById('lista-catalogo');
-            if (!div) return;
-            div.innerHTML = '';
-            if (lista.length === 0) {
-                div.innerHTML = '<p style="color:#666; font-size:0.8rem; padding:10px;">Nenhuma música encontrada.</p>';
-                return;
-            }
-            lista.forEach((item) => {
-                div.innerHTML += `
-                    <div class="item-catalogo">
-                        <div class="item-info">
-                            <strong>${item.musica}</strong>
-                            <small>${item.artista}</small>
-                        </div>
-                        <button class="btn-pedir-item" onclick='enviarPedidoPista(${JSON.stringify(item)})'>Pedir</button>
+        <!-- TELA 2: PRINCIPAL (PISTA) -->
+        <div v-if="telaAtual === 'principal'" class="pb-6">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8 pt-2">
+                <div class="flex-1 text-center pl-10">
+                    <h1 class="text-2xl font-extrabold bg-white text-black px-3 py-0.5 rounded inline-block tracking-tighter">VIRTUAL<span class="text-red-600">DJ</span></h1>
+                    <div class="mt-1">
+                        <span class="text-[9px] font-bold text-yellow-400 border border-yellow-400 rounded-full px-2 py-0.5">⚡ Automação em Tempo Real</span>
                     </div>
-                `;
-            });
-        }
+                </div>
+                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="w-12 h-12 rounded-full object-cover border-2 border-zinc-600 cursor-pointer shadow-lg" title="Editar Perfil">
+            </div>
 
-        function filtrarCatalogo() {
-            const termo = document.getElementById('busca-musica').value.toLowerCase();
-            const filtrado = catalogoGlobal.filter(item => item.musica.toLowerCase().includes(termo) || item.artista.toLowerCase().includes(termo));
-            renderizarCatalogo(filtrado);
-        }
+            <!-- Botão CTA Pedir Música -->
+            <button @click="abrirBusca" class="w-full bg-zinc-100 text-black font-extrabold text-2xl py-5 rounded-[2rem] mb-8 flex justify-between items-center px-8 shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-transform active:scale-95">
+                PEDIR MÚSICA
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
 
-        function enviarPedidoPista(item) {
-            socket.emit('novo_pedido', {
-                nome: meuNome,
-                artista: item.artista,
-                musica: item.musica,
-                caminho: item.caminho,
-                tipo: 'pista',
-                hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-            alert(`🚀 Pedido de "${item.musica}" enviado com sucesso!`);
-            trocarAba('fila');
-        }
+            <!-- Card Automix -->
+            <div class="bg-[#18181b] rounded-[2rem] p-5 w-full shadow-2xl">
+                <div class="flex items-center justify-center gap-2 mb-4 text-sm font-bold text-zinc-300 tracking-wide">
+                    <svg class="w-5 h-5 text-zinc-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                    TOCANDO AGORA
+                </div>
+                
+                <div class="w-full aspect-[21/9] bg-zinc-800 rounded-2xl mb-4 overflow-hidden shadow-inner">
+                    <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" class="w-full h-full object-cover">
+                </div>
+                <div class="text-center mb-6 px-2">
+                    <h2 class="text-2xl font-extrabold truncate text-white tracking-tight">{{ tocandoAgora.titulo }}</h2>
+                    <p class="text-zinc-400 truncate text-sm mt-1">{{ tocandoAgora.artista }}</p>
+                </div>
 
-        function enviarKaraoke() {
-            const artista = document.getElementById('karaoke-artista').value.trim();
-            const musica = document.getElementById('karaoke-musica').value.trim();
-            if (!artista || !musica) { alert("Preencha o artista e a música!"); return; }
-            socket.emit('novo_pedido', {
-                nome: meuNome, artista, musica, tipo: 'karaoke',
-                hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-            alert(`🎤 Guardado na geladeira do The Voice!`);
-            document.getElementById('karaoke-artista').value = '';
-            document.getElementById('karaoke-musica').value = '';
-            trocarAba('fila');
-        }
-
-        function toggleFiltroMeus() {
-            apenasMeus = !apenasMeus;
-            document.getElementById('btn-filtro-meus').classList.toggle('ativo', apenasMeus);
-            renderizarFilas();
-        }
-
-        socket.on('sync_state', (estado) => {
-            estadoGlobal = estado;
-            renderizarFilas();
-        });
-
-        function renderizarFilas() {
-            // Renderiza Fila Dinâmica (Pista ou Karaokê)
-            const divFila = document.getElementById('conteudo-fila');
-            const tituloFila = document.getElementById('titulo-fila');
-            
-            if (divFila) {
-                divFila.innerHTML = '';
-                let listaBase = modoAtual === 'pista' ? (estadoGlobal.filaPista || []) : (estadoGlobal.filaKaraoke || []);
-                tituloFila.innerText = modoAtual === 'pista' ? "Fila da Pista (Ao Vivo)" : "Fila do Karaokê (Geladeira)";
-                tituloFila.style.color = modoAtual === 'pista' ? "#38bdf8" : "#a855f7";
-
-                let filtrada = apenasMeus ? listaBase.filter(p => p.nome.toLowerCase() === meuNome.toLowerCase()) : listaBase;
-
-                if (filtrada.length === 0) {
-                    divFila.innerHTML = '<p style="color:#666; font-size:0.85rem;">Nenhum pedido na fila no momento.</p>';
-                } else {
-                    filtrada.forEach(p => {
-                        divFila.innerHTML += `
-                            <div class="card-pedido ${modoAtual === 'karaoke' ? 'karaoke' : ''}">
-                                <strong>${p.musica}</strong>
-                                <p>Artista: ${p.artista} | Por: ${p.nome} ${p.hora ? '(' + p.hora + ')' : ''}</p>
+                <div class="border-t border-zinc-700 pt-5">
+                    <h3 class="text-center font-bold text-xl mb-4 tracking-tight">A seguir</h3>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div v-for="(musica, index) in proximasMusicas" :key="index" class="bg-[#e4e4e7] text-black rounded-2xl p-2.5 flex items-center gap-3">
+                            <img :src="musica.capa" class="w-16 h-16 rounded-xl object-cover shadow-sm bg-zinc-300">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-extrabold text-[15px] truncate tracking-tight">{{ musica.titulo }}</h4>
+                                <p class="text-xs text-zinc-600 truncate mt-0.5">{{ musica.artista }}</p>
                             </div>
-                        `;
-                    });
+                            <div class="text-center px-3 border-l border-zinc-300">
+                                <p class="text-[9px] font-bold text-zinc-500 leading-none">posição</p>
+                                <p class="font-black text-2xl leading-none my-0.5">{{ index + 2 }}</p>
+                                <p class="text-[9px] font-bold text-zinc-500 leading-none">no deck do DJ</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button @click="verProximas" class="w-full bg-[#09090b] border border-zinc-800 text-white font-extrabold text-lg py-3.5 rounded-[1.5rem] flex items-center justify-between px-6 transition-transform active:scale-95 shadow-md">
+                        VER PRÓXIMAS
+                        <svg class="w-7 h-7 bg-white text-black rounded-full p-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+        
+        // Configurações
+        const IMGBB_API_KEY = '5b0d512fa2132911bcdb68f224a8943b'; 
+        const SERVER_URL = 'https://vdj-requests-cloud.onrender.com';
+
+        createApp({
+            setup() {
+                const telaAtual = ref('cadastro');
+                const nome = ref('');
+                const fotoUrl = ref('');
+                const fotoPreview = ref('');
+                const uploading = ref(false);
+                const socket = io(SERVER_URL);
+
+                // Dados provisórios para o front-end
+                const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
+                const proximasMusicas = ref([
+                    { titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
+                    { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' }
+                ]);
+
+                onMounted(() => {
+                    const savedName = localStorage.getItem('vdj_nome');
+                    const savedFoto = localStorage.getItem('vdj_foto');
+                    if (savedName) {
+                        nome.value = savedName;
+                        if (savedFoto) fotoUrl.value = savedFoto;
+                        telaAtual.value = 'principal';
+                    }
+                });
+
+                const processarFoto = async (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    fotoPreview.value = URL.createObjectURL(file);
+                    uploading.value = true;
+
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    try {
+                        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const data = await res.json();
+                        if (data.success) fotoUrl.value = data.data.url;
+                    } catch (e) {
+                        alert('Falha na conexão com o ImgBB.');
+                        fotoPreview.value = '';
+                    } finally {
+                        uploading.value = false;
+                    }
+                };
+
+                const avancar = () => {
+                    localStorage.setItem('vdj_nome', nome.value);
+                    if (fotoUrl.value) localStorage.setItem('vdj_foto', fotoUrl.value);
+                    telaAtual.value = 'principal';
+                };
+
+                const abrirBusca = () => alert('Mock: Transição para Tela de Busca');
+                const verProximas = () => alert('Mock: Transição para Fila Expandida');
+
+                return {
+                    telaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
+                    tocandoAgora, proximasMusicas, abrirBusca, verProximas
                 }
             }
-
-            // Renderiza Já Rolou
-            const divJaRolou = document.getElementById('conteudo-jarolou');
-            if (divJaRolou) {
-                divJaRolou.innerHTML = '';
-                let historico = estadoGlobal.historicoJaRolou || [];
-                if (historico.length === 0) {
-                    divJaRolou.innerHTML = '<p style="color:#666; font-size:0.85rem;">Nenhuma música tocou ainda.</p>';
-                } else {
-                    historico.forEach(p => {
-                        divJaRolou.innerHTML += `
-                            <div class="card-pedido jarolou">
-                                <strong>${p.musica} - ${p.artista}</strong>
-                                <p>Pedida por: ${p.nome} | ⏰ Tocou às: ${p.horaTocada || 'Recente'}</p>
-                            </div>
-                        `;
-                    });
-                }
-            }
-        }
+        }).mount('#app');
     </script>
 </body>
 </html>
