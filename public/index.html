@@ -22,12 +22,13 @@
     </style>
 </head>
 <body>
-    <div id="app" :style="{ backgroundImage: temaAtual === 'karaoke' ? 'url(/fundo-thevoice-app.png)' : 'url(/fundo-app.png)' }" class="max-w-md mx-auto p-5 relative min-h-screen bg-cover bg-center bg-no-repeat bg-fixed transition-all duration-500 flex flex-col">
+    <!-- Caminhos corrigidos sem a barra inicial para funcionar no Express -->
+    <div id="app" :style="{ backgroundImage: temaAtual === 'karaoke' ? 'url(fundo-thevoice-app.png)' : 'url(fundo-app.png)' }" class="max-w-md mx-auto p-5 relative min-h-screen bg-cover bg-center bg-no-repeat bg-fixed transition-all duration-500 flex flex-col">
         
         <!-- TELA 1: CADASTRO -->
         <div v-if="telaAtual === 'cadastro'" class="flex flex-col items-center justify-center flex-1 py-8">
             <div class="mb-12 w-full flex justify-center">
-                <img src="/logo-vdj.png" alt="VirtualDJ" class="w-3/4 max-w-[280px] object-contain">
+                <img src="logo-vdj.png" alt="VirtualDJ" class="w-full max-w-[300px] object-contain">
             </div>
 
             <div class="bg-[#2a2a2a] rounded-[2.5rem] p-8 w-full shadow-2xl">
@@ -57,7 +58,7 @@
         <div v-if="telaAtual === 'principal'" class="pb-8">
             <div class="flex justify-between items-center mb-8 pt-4">
                 <div class="flex-1 flex justify-center pl-16">
-                    <img src="/logo-vdj.png" alt="VirtualDJ" class="h-16 object-contain">
+                    <img src="logo-vdj.png" alt="VirtualDJ" class="w-full max-w-[260px] object-contain">
                 </div>
                 <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="w-16 h-16 rounded-full object-cover border-2 border-zinc-700 cursor-pointer shadow-xl">
             </div>
