@@ -8,6 +8,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Linha adicionada para o servidor exibir a sua interface visual
+app.use(express.static('public'));
+
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: { origin: "*" }
@@ -27,7 +30,6 @@ app.get('/api/cover', async (req, res) => {
         const resposta = await axios.get(`https://itunes.apple.com/search?term=${termo}&entity=song&limit=1`);
 
         if (resposta.data.results && resposta.data.results.length > 0) {
-            // Converte a miniatura de 100x100 para alta resolução (600x600)
             let capaAltaRes = resposta.data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
             return res.json({ url: capaAltaRes });
         }
@@ -41,15 +43,12 @@ app.get('/api/cover', async (req, res) => {
 io.on('connection', (socket) => {
     console.log(`Cliente conectado: ${socket.id}`);
 
-    // Eventos da Pista
     socket.on('pedir_musica', (dados) => {
-        // Dispara o caminho físico para o bridge.py injetar no VirtualDJ
         io.emit('novo_pedido', { caminho: dados.caminho });
         filaPista.push(dados);
         io.emit('atualizacao_fila', filaPista);
     });
 
-    // Eventos do The Voice Família
     socket.on('pedir_karaoke', (dados) => {
         filaKaraoke.push(dados);
         io.emit('atualizacao_karaoke', filaKaraoke);
