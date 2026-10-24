@@ -351,16 +351,20 @@
                             <!-- Corpo do Card -->
                             <div class="relative bg-[#C8C8C8] rounded-r-2xl rounded-l-full h-[64px] flex items-center justify-between shadow-md pr-1.5">
                                 
-                                <!-- Avatar Flutuante (Borda inferior alinhada, topo transbordando) -->
+                                <!-- Avatar Flutuante -->
                                 <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10">
                                 
-                                <!-- Metadados da Música -->
-                                <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full">
-                                    <h4 class="font-black text-[15px] truncate text-black leading-snug">{{ pedido.titulo }}</h4>
-                                    <p class="text-[12px] font-semibold text-gray-700 truncate leading-none mt-0.5">{{ pedido.artista }}</p>
+                                <!-- Metadados da Música com Letreiro Marquee -->
+                                <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full overflow-hidden relative">
+                                    <div :class="pedido.titulo.length > 18 ? 'marquee-container' : ''">
+                                        <h4 class="font-black text-[15px] text-black leading-snug" :class="pedido.titulo.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
+                                    </div>
+                                    <div :class="pedido.artista.length > 22 ? 'marquee-container mt-0.5' : 'mt-0.5'">
+                                        <p class="text-[12px] font-semibold text-gray-700 leading-none" :class="pedido.artista.length > 22 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
+                                    </div>
                                 </div>
 
-                                <!-- Capa (Altura Total sem cantos redondos) e Selo -->
+                                <!-- Capa e Selo -->
                                 <div class="flex items-center gap-1.5 shrink-0 h-full">
                                     <img :src="pedido.capa" class="h-full w-[64px] object-cover rounded-none border border-black/10 shrink-0">
                                     <div class="bg-gradient-to-b from-[#FBBF24] to-[#F59E0B] h-[52px] w-[48px] rounded-xl flex flex-col items-center justify-center shadow-sm shrink-0">
@@ -393,9 +397,14 @@
                             <div class="relative bg-[#5B5E63] rounded-r-2xl rounded-l-full h-[64px] flex items-center justify-between shadow-md pr-1.5">
                                 <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10 grayscale opacity-90">
                                 
-                                <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full">
-                                    <h4 class="font-black text-[15px] truncate text-white leading-snug">{{ pedido.titulo }}</h4>
-                                    <p class="text-[12px] font-semibold text-gray-300 truncate leading-none mt-0.5">{{ pedido.artista }}</p>
+                                <!-- Metadados da Música com Letreiro Marquee -->
+                                <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full overflow-hidden relative">
+                                    <div :class="pedido.titulo.length > 18 ? 'marquee-container' : ''">
+                                        <h4 class="font-black text-[15px] text-white leading-snug" :class="pedido.titulo.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
+                                    </div>
+                                    <div :class="pedido.artista.length > 22 ? 'marquee-container mt-0.5' : 'mt-0.5'">
+                                        <p class="text-[12px] font-semibold text-gray-300 leading-none" :class="pedido.artista.length > 22 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
+                                    </div>
                                 </div>
 
                                 <div class="flex items-center gap-1.5 shrink-0 h-full">
@@ -552,80 +561,4 @@
                     if (duplicada) {
                         mostrarToast('aviso', 'Essa música já está na fila da pista!');
                     } else {
-                        // Push no array geral
-                        pedidosGerais.value.unshift({
-                            pedinte: nome.value || 'Usuário',
-                            avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
-                            titulo: musicaSelecionada.value.titulo,
-                            artista: musicaSelecionada.value.artista,
-                            capa: musicaSelecionada.value.capa,
-                            status: 'fila',
-                            hora: null
-                        });
-
-                        mostrarToast('sucesso', 'Pedido enviado com sucesso! 🚀');
-                    }
-                    
-                    artistaSelecionado.value = '';
-                    musicaSelecionada.value = '';
-                    textoBusca.value = '';
-                };
-
-                onMounted(() => {
-                    const savedName = localStorage.getItem('vdj_nome');
-                    const savedFoto = localStorage.getItem('vdj_foto');
-                    if (savedName) {
-                        nome.value = savedName;
-                        if (savedFoto) fotoUrl.value = savedFoto;
-                        telaAtual.value = 'principal';
-                    }
-                });
-
-                const processarFoto = async (event) => {
-                    const file = event.target.files[0];
-                    if (!file) return;
-
-                    fotoPreview.value = URL.createObjectURL(file);
-                    uploading.value = true;
-
-                    const formData = new FormData();
-                    formData.append('image', file);
-
-                    try {
-                        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-                        const data = await res.json();
-                        if (data.success) fotoUrl.value = data.data.url;
-                    } catch (e) {
-                        alert('Falha na conexão com o ImgBB.');
-                        fotoPreview.value = '';
-                    } finally {
-                        uploading.value = false;
-                    }
-                };
-
-                const avancar = () => {
-                    localStorage.setItem('vdj_nome', nome.value);
-                    if (fotoUrl.value) localStorage.setItem('vdj_foto', fotoUrl.value);
-                    
-                    // Ajusta o array inicial se o cara logou com nome 'Julio'
-                    if(nome.value.toLowerCase() === 'julio') {
-                        pedidosGerais.value.forEach(p => {
-                            if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png';
-                        });
-                    }
-
-                    telaAtual.value = 'principal';
-                };
-
-                return {
-                    telaAtual, temaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
-                    tocandoAgora, proximasMusicas, 
-                    textoBusca, artistaSelecionado, musicaSelecionada, artistasUnicos, musicasDoArtista,
-                    resultadosBusca, atualizarBusca, limparBusca, resetarMusica, selecionarDaBusca, confirmarPedido, musicaPronta,
-                    toast, pedidosGerais, filaEsperaExibida, historicoTocadosExibido, apenasMeusPedidos
-                }
-            }
-        }).mount('#app');
-    </script>
-</body>
-</html>
+                        //
