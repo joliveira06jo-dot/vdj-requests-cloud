@@ -307,8 +307,6 @@
                 </button>
             </div>
 
-            <!-- Card Inferior (Mock local antigo foi removido, a Fila 5 centraliza tudo) -->
-            
             <div class="shrink-0 mt-2">
                 <button @click="telaAtual = 'fila_espera'" class="w-full bg-[#6a6a6a] text-white font-black text-[22px] tracking-tight py-3 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
                     <span class="flex-1 text-center pl-10">VER FILA DE ESPERA</span>
@@ -320,93 +318,113 @@
         </div>
 
         <!-- ================= TELA 5: FILA DE ESPERA E JÁ TOCADOS ================= -->
-        <div v-if="telaAtual === 'fila_espera'" class="flex flex-col flex-1 w-full px-5 pb-5 min-h-0">
-            <div class="bg-[#2a2a2a] rounded-[2.5rem] pt-6 pb-2 px-2 w-full shadow-2xl flex-1 flex flex-col border border-white/10 min-h-0">
-                <h3 class="text-center font-bold text-[22px] mb-4 text-white tracking-wide shrink-0">FILA DE ESPERA</h3>
+        <div v-if="telaAtual === 'fila_espera'" class="flex flex-col flex-1 w-full px-4 min-h-0 relative h-[100dvh]">
+            
+            <div class="bg-[#242627] rounded-[36px] pt-4 pb-[85px] px-3 w-full shadow-2xl flex-1 flex flex-col min-h-0 border border-white/10 my-4">
+                
+                <!-- Título Fila de Espera -->
+                <div class="bg-[#18191B] rounded-full py-2.5 px-4 mb-3 shrink-0 shadow-lg mx-2 flex items-center justify-center">
+                    <h3 class="font-black text-[22px] text-white tracking-wider">FILA DE ESPERA</h3>
+                </div>
                 
                 <!-- Toggle Switch -->
-                <div class="flex items-center justify-center mb-6 shrink-0">
+                <div class="flex items-center justify-center mb-4 shrink-0 px-2">
                     <label class="flex items-center cursor-pointer gap-3">
-                        <div class="relative">
+                        <div class="relative inline-flex items-center">
                             <input type="checkbox" v-model="apenasMeusPedidos" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                            <div class="w-11 h-6 bg-gray-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22c55e]"></div>
                         </div>
-                        <span class="text-white font-bold text-[11px] tracking-wide mt-0.5">VISUALIZAR APENAS OS MEUS PEDIDOS</span>
+                        <span class="text-white font-black text-[11px] tracking-wider uppercase mt-0.5">VISUALIZAR APENAS OS MEUS PEDIDOS</span>
                     </label>
                 </div>
 
-                <div class="flex-1 overflow-y-auto custom-scroll px-4">
-                    
-                    <!-- Lista Fila de Espera -->
-                    <div class="space-y-4 pb-2">
-                        <div v-for="(pedido, index) in filaEsperaExibida" :key="'fila-'+index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-2.5 pl-14 pr-2.5 flex items-center gap-2 shadow-md ml-5">
-                            <!-- Avatar pedinte (esquerda) -->
-                            <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-6 w-[64px] h-[64px] rounded-full object-cover shadow-xl border-[3px] border-[#f0f0f0] z-10 bg-zinc-300">
+                <!-- Lista Fila de Espera (Scroll Independente 1) -->
+                <div class="flex-1 overflow-y-auto custom-scroll pr-2 min-h-[120px]">
+                    <div class="space-y-4 pt-1 pb-2">
+                        <div v-for="(pedido, index) in filaEsperaExibida" :key="'fila-'+index" class="relative ml-8">
                             
-                            <!-- Dados (centro) -->
-                            <div class="flex-1 min-w-0 pl-2">
-                                <p class="text-[10px] text-gray-600 mb-0.5 leading-tight"><span class="font-bold text-black uppercase">{{ pedido.pedinte }}</span> já pediu para tocar</p>
-                                <h4 class="font-extrabold text-[15px] truncate leading-tight text-black">{{ pedido.titulo }}</h4>
-                                <p class="text-[12px] text-[#555555] truncate mt-0.5">{{ pedido.artista }}</p>
-                            </div>
+                            <!-- Texto externo (Acima do card) -->
+                            <p class="text-[11px] text-gray-200 mb-0.5 pl-[48px] leading-tight relative z-0">
+                                <span class="font-black uppercase text-white">{{ pedido.pedinte }}</span> já pediu para tocar
+                            </p>
+                            
+                            <!-- Corpo do Card -->
+                            <div class="relative bg-[#C8C8C8] rounded-r-2xl rounded-l-full h-[64px] flex items-center justify-between shadow-md pr-1.5">
+                                
+                                <!-- Avatar Flutuante (Borda inferior alinhada, topo transbordando) -->
+                                <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10">
+                                
+                                <!-- Metadados da Música -->
+                                <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full">
+                                    <h4 class="font-black text-[15px] truncate text-black leading-snug">{{ pedido.titulo }}</h4>
+                                    <p class="text-[12px] font-semibold text-gray-700 truncate leading-none mt-0.5">{{ pedido.artista }}</p>
+                                </div>
 
-                            <!-- Capa e Selo (direita) -->
-                            <div class="flex items-center gap-2 shrink-0">
-                                <img :src="pedido.capa" class="w-[50px] h-[50px] rounded-lg object-cover shadow-sm">
-                                <div class="flex flex-col items-center w-[50px]">
-                                    <div class="bg-[#fbc02d] rounded-full p-1.5 mb-0.5 shadow-sm">
-                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <!-- Capa (Altura Total sem cantos redondos) e Selo -->
+                                <div class="flex items-center gap-1.5 shrink-0 h-full">
+                                    <img :src="pedido.capa" class="h-full w-[64px] object-cover rounded-none border border-black/10 shrink-0">
+                                    <div class="bg-gradient-to-b from-[#FBBF24] to-[#F59E0B] h-[52px] w-[48px] rounded-xl flex flex-col items-center justify-center shadow-sm shrink-0">
+                                        <svg class="w-5 h-5 text-white mb-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <span class="text-[#D97706] font-black text-[8px] uppercase tracking-tighter">NA FILA</span>
                                     </div>
-                                    <span class="text-[#fbc02d] font-black text-[8px] uppercase tracking-tighter">NA FILA</span>
                                 </div>
                             </div>
                         </div>
-                        <div v-if="filaEsperaExibida.length === 0" class="text-center text-gray-400 text-xs py-2">
+                        <div v-if="filaEsperaExibida.length === 0" class="text-center text-gray-400 text-xs py-2 font-medium">
                             Nenhuma música na fila.
                         </div>
                     </div>
+                </div>
 
-                    <!-- Divisor JÁ TOCADOS -->
-                    <div class="bg-[#6a6a6a] text-center text-white font-bold text-[18px] py-2 rounded-full my-6 shadow-md mx-2">
-                        JÁ TOCADOS
-                    </div>
+                <!-- Título JÁ TOCADOS -->
+                <div class="bg-[#4E5155] rounded-full py-2.5 px-4 mt-3 mb-3 shrink-0 shadow-lg mx-2 flex items-center justify-center relative z-20">
+                    <h3 class="font-black text-[22px] text-white tracking-wider">JÁ TOCADOS</h3>
+                </div>
 
-                    <!-- Lista Já Tocados -->
-                    <div class="space-y-4 pb-4">
-                        <div v-for="(pedido, index) in historicoTocadosExibido" :key="'tocado-'+index" class="relative bg-[#737373] text-white rounded-[1.25rem] py-2.5 pl-14 pr-2.5 flex items-center gap-2 shadow-md ml-5">
-                            <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-6 w-[64px] h-[64px] rounded-full object-cover shadow-xl border-[3px] border-[#737373] z-10 bg-zinc-300 filter grayscale">
+                <!-- Lista Já Tocados (Scroll Independente 2) -->
+                <div class="flex-1 overflow-y-auto custom-scroll pr-2 min-h-[120px]">
+                    <div class="space-y-4 pt-1 pb-2">
+                        <div v-for="(pedido, index) in historicoTocadosExibido" :key="'tocado-'+index" class="relative ml-8">
                             
-                            <div class="flex-1 min-w-0 pl-2">
-                                <p class="text-[10px] text-gray-200 mb-0.5 leading-tight">Já tocamos para <span class="font-bold text-white uppercase">{{ pedido.pedinte }}</span> às {{ pedido.hora }}</p>
-                                <h4 class="font-extrabold text-[15px] truncate leading-tight text-white">{{ pedido.titulo }}</h4>
-                                <p class="text-[12px] text-gray-300 truncate mt-0.5">{{ pedido.artista }}</p>
-                            </div>
+                            <p class="text-[10px] text-gray-300 mb-0.5 pl-[48px] leading-tight relative z-0">
+                                Já tocamos para <span class="font-black uppercase text-white">{{ pedido.pedinte }}</span> às <span class="font-black text-white">{{ pedido.hora }}</span>
+                            </p>
+                            
+                            <div class="relative bg-[#5B5E63] rounded-r-2xl rounded-l-full h-[64px] flex items-center justify-between shadow-md pr-1.5">
+                                <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10 grayscale opacity-90">
+                                
+                                <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full">
+                                    <h4 class="font-black text-[15px] truncate text-white leading-snug">{{ pedido.titulo }}</h4>
+                                    <p class="text-[12px] font-semibold text-gray-300 truncate leading-none mt-0.5">{{ pedido.artista }}</p>
+                                </div>
 
-                            <div class="flex items-center gap-2 shrink-0">
-                                <img :src="pedido.capa" class="w-[50px] h-[50px] rounded-lg object-cover shadow-sm filter grayscale opacity-80">
-                                <div class="flex flex-col items-center w-[50px]">
-                                    <div class="bg-[#555555] rounded-full p-1.5 mb-0.5 shadow-sm border border-gray-400">
-                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div class="flex items-center gap-1.5 shrink-0 h-full">
+                                    <img :src="pedido.capa" class="h-full w-[64px] object-cover rounded-none border border-black/20 shrink-0 grayscale opacity-80">
+                                    <div class="bg-[#8C8F94] h-[52px] w-[48px] rounded-xl flex flex-col items-center justify-center shadow-sm shrink-0 border border-gray-400/30">
+                                        <svg class="w-5 h-5 text-white/70 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <span class="text-[#374151] font-black text-[8px] uppercase tracking-tighter">JÁ TOCOU</span>
                                     </div>
-                                    <span class="text-[#aaaaaa] font-black text-[8px] uppercase tracking-tighter">JÁ TOCOU</span>
                                 </div>
                             </div>
                         </div>
-                        <div v-if="historicoTocadosExibido.length === 0" class="text-center text-gray-400 text-xs py-2">
+                        <div v-if="historicoTocadosExibido.length === 0" class="text-center text-gray-400 text-xs py-2 font-medium">
                             Nenhum histórico encontrado.
                         </div>
                     </div>
-
                 </div>
+
             </div>
-            <div class="mt-4 shrink-0">
-                <button @click="telaAtual = 'principal'" class="w-full bg-[#111111] text-white font-black text-[24px] tracking-tight py-4 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
-                    <div class="bg-white rounded-full w-12 h-12 flex items-center justify-center text-black shrink-0 shadow-md">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+
+            <!-- Botão Fixo/Flutuante no Rodapé -->
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-[85%] max-w-sm z-50">
+                <button @click="telaAtual = 'principal'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
+                    <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     </div>
-                    <span class="flex-1 text-center pr-10">VOLTAR AO INÍCIO</span>
+                    <span>VOLTAR AO INÍCIO</span>
                 </button>
             </div>
+
         </div>
 
     </div>
@@ -592,7 +610,7 @@
                     // Ajusta o array inicial se o cara logou com nome 'Julio'
                     if(nome.value.toLowerCase() === 'julio') {
                         pedidosGerais.value.forEach(p => {
-                            if(p.pedinte === 'Julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png';
+                            if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png';
                         });
                     }
 
