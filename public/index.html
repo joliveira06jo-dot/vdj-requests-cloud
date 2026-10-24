@@ -40,6 +40,30 @@
         .btn-animado {
             animation: pulseZoom 4s infinite ease-in-out;
         }
+
+        /* Efeito de rolagem de texto (Marquee CSS) para textos longos */
+        .marquee-container {
+            display: flex;
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+        }
+        .marquee-text {
+            animation: marquee 8s linear infinite;
+        }
+        @keyframes marquee {
+            0%   { transform: translateX(10%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Ocultar barra de rolagem nativa para manter design limpo (protótipo) */
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body>
@@ -48,7 +72,7 @@
         <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
         <div class="fixed inset-0 bg-black/20 -z-10"></div>
 
-        <!-- TELA 1: CADASTRO -->
+        <!-- ================= TELA 1: CADASTRO ================= -->
         <div v-if="telaAtual === 'cadastro'" class="flex flex-col w-full px-5 pt-8 pb-8">
             <div class="relative flex justify-center items-center mb-8 h-[60px] w-full">
                 <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
@@ -68,7 +92,6 @@
                         <input type="file" class="hidden" @change="processarFoto" accept="image/*">
                         <img v-if="fotoPreview" :src="fotoPreview" class="absolute inset-0 w-full h-full object-cover">
                         <div v-else class="relative w-full h-full flex items-center justify-center">
-                            <!-- Ícone customizado fiel ao protótipo -->
                             <svg class="w-12 h-12 text-[#2a2a2a] absolute -ml-4" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                             <div class="absolute right-1 top-1 bg-[#2a2a2a] text-white rounded-full w-8 h-8 flex items-center justify-center border-2 border-white shadow-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
@@ -78,7 +101,6 @@
                     </label>
                 </div>
 
-                <!-- Botão Avançar claro conforme protótipo -->
                 <button @click="avancar" :disabled="!nome || uploading" class="w-full bg-[#e5e5e5] text-black font-extrabold text-[22px] py-4 rounded-full disabled:opacity-50 flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-md">
                     AVANÇAR
                     <div class="bg-white rounded-full w-8 h-8 flex items-center justify-center text-[#aaaaaa] shrink-0 shadow-sm border border-gray-200">
@@ -88,16 +110,18 @@
             </div>
         </div>
 
-        <!-- TELA 2: PRINCIPAL (PISTA) -->
-        <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-4 pt-6">
-            
-            <!-- Header fixo - Proporções corrigidas -->
-            <div class="relative flex justify-center items-center mb-6 h-[65px] w-full px-2">
-                <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
-                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-0 top-0 w-[65px] h-[65px] rounded-full object-cover border-[3px] border-white/20 cursor-pointer shadow-xl">
-            </div>
 
-            <!-- Botão CTA Pedir Música (Massivo e imponente) -->
+        <!-- CABEÇALHO GLOBAL FIXO (Exibido nas Telas 2, 3, etc) -->
+        <div v-if="telaAtual !== 'cadastro'" class="relative flex justify-center items-center mb-6 mt-6 h-[65px] w-full px-7 shrink-0">
+            <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
+            <!-- Clique no avatar retorna à tela de cadastro/edição -->
+            <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-7 top-0 w-[65px] h-[65px] rounded-full object-cover border-[3px] border-white/20 cursor-pointer shadow-xl">
+        </div>
+
+
+        <!-- ================= TELA 2: PRINCIPAL (PISTA) ================= -->
+        <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-4">
+            
             <button @click="abrirBusca" class="w-full bg-[#1c1c1c] text-white font-black text-[32px] tracking-tight py-5 rounded-full mb-6 flex justify-between items-center pl-9 pr-3 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-transform active:scale-95 border border-white/10 btn-animado">
                 PEDIR MÚSICA
                 <div class="bg-white rounded-full w-14 h-14 flex items-center justify-center text-black shrink-0 shadow-lg">
@@ -105,7 +129,6 @@
                 </div>
             </button>
 
-            <!-- Card Principal -->
             <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl mb-6 border border-white/10">
                 <div class="flex items-center justify-center gap-2 mb-4 text-[13px] font-extrabold text-white tracking-[0.15em]">
                     <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
@@ -126,8 +149,8 @@
                     <h3 class="text-center font-bold text-[19px] mb-4 text-white tracking-wide">A seguir</h3>
                     
                     <div class="space-y-4 pt-1">
-                        <div v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-16 pr-4 flex items-center gap-3 shadow-md">
-                            <!-- Capa vazando para a esquerda -->
+                        <!-- Limita a exibição aos 2 primeiros na tela principal -->
+                        <div v-for="(musica, index) in proximasMusicas.slice(0, 2)" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-16 pr-4 flex items-center gap-3 shadow-md">
                             <img :src="musica.capa" class="absolute -left-3 w-[72px] h-[72px] rounded-xl object-cover shadow-xl bg-zinc-300 shrink-0 border-2 border-white">
                             
                             <div class="flex-1 min-w-0 pl-2">
@@ -135,7 +158,6 @@
                                 <p class="text-[13px] text-[#555555] truncate mt-1">{{ musica.artista }}</p>
                             </div>
 
-                            <!-- Textos em minúsculo conforme protótipo -->
                             <div class="text-center px-2 shrink-0">
                                 <p class="text-[10px] font-medium text-gray-500 leading-none lowercase tracking-wide">posição</p>
                                 <p class="font-black text-[24px] leading-none my-0.5 text-black">{{ index + 2 }}</p>
@@ -146,14 +168,65 @@
                 </div>
             </div>
 
-            <!-- Botão Ver Próximas -->
-            <button @click="verProximas" class="w-full bg-[#111111] text-white font-black text-[24px] tracking-tight py-4 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
+            <button @click="telaAtual = 'proximas'" class="w-full bg-[#111111] text-white font-black text-[24px] tracking-tight py-4 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
                 <span class="flex-1 text-center pl-10">VER PRÓXIMAS</span>
                 <div class="bg-white rounded-full w-12 h-12 flex items-center justify-center text-black shrink-0 shadow-md">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                 </div>
             </button>
         </div>
+
+
+        <!-- ================= TELA 3: FILA EXPANDIDA ================= -->
+        <div v-if="telaAtual === 'proximas'" class="flex flex-col flex-1 w-full px-5 pb-4 h-full relative">
+            
+            <div class="bg-[#2a2a2a] rounded-[2.5rem] p-6 w-full shadow-2xl flex-1 flex flex-col border border-white/10 min-h-[400px]">
+                
+                <h3 class="text-center font-bold text-[22px] mb-6 text-white tracking-wide">A seguir</h3>
+                
+                <!-- Área rolável ocultando a barra nativa -->
+                <div class="space-y-4 pt-1 flex-1 overflow-y-auto hide-scroll pb-6">
+                    <div v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-16 pr-4 flex items-center gap-3 shadow-md">
+                        
+                        <img :src="musica.capa" class="absolute -left-3 w-[72px] h-[72px] rounded-xl object-cover shadow-xl bg-zinc-300 shrink-0 border-2 border-white">
+                        
+                        <!-- Lógica de Marquee: Se o texto for longo, aplica o carrossel, se não, apenas trunca -->
+                        <div class="flex-1 min-w-0 pl-2 pr-2 overflow-hidden relative">
+                            <!-- Título da música -->
+                            <div :class="musica.titulo.length > 20 ? 'marquee-container' : ''">
+                                <h4 class="font-extrabold text-[16px] leading-tight text-black" :class="musica.titulo.length > 20 ? 'marquee-text' : 'truncate'">
+                                    {{ musica.titulo }}
+                                </h4>
+                            </div>
+                            <!-- Nome do Artista -->
+                            <div :class="musica.artista.length > 25 ? 'marquee-container mt-1' : 'mt-1'">
+                                <p class="text-[13px] text-[#555555]" :class="musica.artista.length > 25 ? 'marquee-text' : 'truncate'">
+                                    {{ musica.artista }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Info Posicional (Deck) -->
+                        <div class="text-center px-2 shrink-0 border-l border-[#d0d0d0]">
+                            <p class="text-[10px] font-medium text-gray-500 leading-none lowercase tracking-wide">posição</p>
+                            <p class="font-black text-[24px] leading-none my-0.5 text-black">{{ index + 2 }}</p>
+                            <p class="text-[9px] font-medium text-gray-500 leading-none lowercase tracking-wide">no deck do DJ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão fixo no rodapé flutuando sobre o container rolável -->
+            <div class="mt-6">
+                <button @click="telaAtual = 'principal'" class="w-full bg-[#111111] text-white font-black text-[24px] tracking-tight py-4 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
+                    <div class="bg-white rounded-full w-12 h-12 flex items-center justify-center text-black shrink-0 shadow-md">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                    </div>
+                    <span class="flex-1 text-center pr-10">VOLTAR AO INÍCIO</span>
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -171,9 +244,14 @@
                 const uploading = ref(false);
 
                 const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
+                
+                // Array expandido para testar o scroll e o marquee
                 const proximasMusicas = ref([
                     { titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
-                    { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' }
+                    { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
+                    { titulo: 'Amo Noite E Dia (Acústico)', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' },
+                    { titulo: 'Vampirinha (Ao Vivo em Trancoso - Edição Especial)', artista: 'Ivete Sangalo', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' },
+                    { titulo: 'Um Nome Super Longo De Uma Música Que Não Cabe No Card', artista: 'Artista com nome excessivamente grande também', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' }
                 ]);
 
                 onMounted(() => {
@@ -215,11 +293,10 @@
                 };
 
                 const abrirBusca = () => alert('Mock: Transição para Tela de Busca');
-                const verProximas = () => alert('Mock: Transição para Fila Expandida');
 
                 return {
                     telaAtual, temaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
-                    tocandoAgora, proximasMusicas, abrirBusca, verProximas
+                    tocandoAgora, proximasMusicas, abrirBusca
                 }
             }
         }).mount('#app');
