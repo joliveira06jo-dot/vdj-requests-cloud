@@ -19,19 +19,24 @@
             margin: 0;
             padding: 0;
             position: relative;
+            min-height: 100vh;
         }
         input:focus { outline: none; }
         
-        /* Fundo fixo blindado absoluto */
-        .fundo-estatico {
+        /* Fundo fixo universal blindado por CSS puro */
+        .fundo-base {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            object-fit: cover;
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
             z-index: -10;
         }
+        .fundo-pista { background-image: url('fundo-app.png'); }
+        .fundo-karaoke { background-image: url('fundo-thevoice-app.png'); }
 
         @keyframes pulseZoom {
             0% { transform: scale(1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
@@ -44,11 +49,10 @@
         }
     </style>
 </head>
-<body class="overflow-y-auto">
+<body :class="temaAtual === 'karaoke' ? 'fundo-karaoke' : 'fundo-pista'" class="fundo-base overflow-y-auto">
     <div id="app" class="max-w-md mx-auto relative min-h-screen flex flex-col font-['Poppins'] pb-12">
         
-        <!-- Fundo Físico Estático Absoluto (Garantido por Tag HTML) -->
-        <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
+        <!-- Camada escura opcional para contraste -->
         <div class="fixed inset-0 bg-black/15 -z-10 pointer-events-none"></div>
 
         <!-- TELA 1: CADASTRO -->
@@ -86,7 +90,7 @@
 
         <!-- TELA 2: PRINCIPAL (PISTA) -->
         <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-6 pt-6">
-            <!-- Header Fixo Padronizado idêntico à Tela 1 -->
+            <!-- Header Fixo Padronizado -->
             <div class="relative flex justify-center items-center mb-4 h-[75px] w-full shrink-0">
                 <img src="logo-vdj.png" alt="VirtualDJ" class="w-[260px] object-contain drop-shadow-2xl">
                 <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-0 w-[54px] h-[54px] rounded-full object-cover border-2 border-white/20 cursor-pointer shadow-xl self-center">
