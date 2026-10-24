@@ -53,7 +53,7 @@
         <!-- TELA 1: CADASTRO -->
         <div v-if="telaAtual === 'cadastro'" class="flex flex-col w-full px-5 pt-6 pb-8">
             <div class="relative flex justify-center items-center mb-6 h-[75px] w-full">
-                <img src="logo-vdj.png" alt="VirtualDJ" class="w-[260px] object-contain drop-shadow-2xl">
+                <img src="logo-vdj.png" alt="VirtualDJ" class="w-[240px] object-contain drop-shadow-2xl">
             </div>
 
             <div class="bg-[#2d2d2d] rounded-[2.5rem] p-7 w-full shadow-2xl border border-white/10">
@@ -78,17 +78,17 @@
 
                 <button @click="avancar" :disabled="!nome || uploading" class="w-full bg-[#7a7a7a] text-black font-extrabold text-[19px] py-4 rounded-full disabled:opacity-50 flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-md">
                     AVANÇAR
-                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7-7 7"></path></svg>
+                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </div>
         </div>
 
         <!-- TELA 2: PRINCIPAL (PISTA) -->
         <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-6 pt-4">
-            <!-- Header Fixo com Avatar Ajustado (65px x 65px e posicionado mais acima) -->
-            <div class="relative flex justify-center items-center mb-4 h-[75px] w-full">
-                <img src="logo-vdj.png" alt="VirtualDJ" class="w-[260px] object-contain drop-shadow-2xl">
-                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-0 top-0 w-[65px] h-[65px] rounded-full object-cover border-2 border-white/20 cursor-pointer shadow-xl">
+            <!-- Header Fixo com Espaçamento Blindado (Avatar de 65px isolado à direita sem tocar no logo) -->
+            <div class="relative flex justify-center items-center mb-4 h-[75px] w-full px-12">
+                <img src="logo-vdj.png" alt="VirtualDJ" class="w-[220px] object-contain drop-shadow-2xl">
+                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-2 top-0 w-[60px] h-[60px] rounded-full object-cover border-2 border-white/20 cursor-pointer shadow-xl">
             </div>
 
             <!-- Botão CTA Pedir Música (#2d2d2d) -->
