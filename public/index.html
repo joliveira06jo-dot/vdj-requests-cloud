@@ -212,11 +212,11 @@
                         <div v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-[3.5rem] pr-4 flex items-center gap-2 shadow-md ml-3">
                             <img :src="musica.capa" class="absolute -left-3 w-[72px] h-[72px] rounded-xl object-cover shadow-xl bg-zinc-300 shrink-0 border-2 border-white">
                             <div class="flex-1 min-w-0 pl-2 pr-2 overflow-hidden relative">
-                                <div :class="musica.titulo.length > 20 ? 'marquee-container' : ''">
-                                    <h4 class="font-extrabold text-[16px] leading-tight text-black" :class="musica.titulo.length > 20 ? 'marquee-text' : 'truncate'">{{ musica.titulo }}</h4>
+                                <div :class="musica.titulo.length > 16 ? 'marquee-container' : ''">
+                                    <h4 class="font-extrabold text-[16px] leading-tight text-black" :class="musica.titulo.length > 16 ? 'marquee-text' : 'truncate'">{{ musica.titulo }}</h4>
                                 </div>
-                                <div :class="musica.artista.length > 25 ? 'marquee-container mt-1' : 'mt-1'">
-                                    <p class="text-[13px] text-[#555555]" :class="musica.artista.length > 25 ? 'marquee-text' : 'truncate'">{{ musica.artista }}</p>
+                                <div :class="musica.artista.length > 18 ? 'marquee-container mt-1' : 'mt-1'">
+                                    <p class="text-[13px] text-[#555555]" :class="musica.artista.length > 18 ? 'marquee-text' : 'truncate'">{{ musica.artista }}</p>
                                 </div>
                             </div>
                             <div class="text-center px-2 shrink-0 border-l border-[#d0d0d0]">
@@ -351,11 +351,11 @@
                                 <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10">
                                 
                                 <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full overflow-hidden relative">
-                                    <div :class="pedido.titulo.length > 18 ? 'marquee-container' : ''">
-                                        <h4 class="font-black text-[15px] text-black leading-snug" :class="pedido.titulo.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
+                                    <div :class="pedido.titulo.length > 15 ? 'marquee-container' : ''">
+                                        <h4 class="font-black text-[15px] text-black leading-snug" :class="pedido.titulo.length > 15 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
                                     </div>
-                                    <div :class="pedido.artista.length > 22 ? 'marquee-container mt-0.5' : 'mt-0.5'">
-                                        <p class="text-[12px] font-semibold text-gray-700 leading-none" :class="pedido.artista.length > 22 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
+                                    <div :class="pedido.artista.length > 18 ? 'marquee-container mt-0.5' : 'mt-0.5'">
+                                        <p class="text-[12px] font-semibold text-gray-700 leading-none" :class="pedido.artista.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
                                     </div>
                                 </div>
 
@@ -392,11 +392,11 @@
                                 <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10 grayscale opacity-90">
                                 
                                 <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full overflow-hidden relative">
-                                    <div :class="pedido.titulo.length > 18 ? 'marquee-container' : ''">
-                                        <h4 class="font-black text-[15px] text-white leading-snug" :class="pedido.titulo.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
+                                    <div :class="pedido.titulo.length > 15 ? 'marquee-container' : ''">
+                                        <h4 class="font-black text-[15px] text-white leading-snug" :class="pedido.titulo.length > 15 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
                                     </div>
-                                    <div :class="pedido.artista.length > 22 ? 'marquee-container mt-0.5' : 'mt-0.5'">
-                                        <p class="text-[12px] font-semibold text-gray-300 leading-none" :class="pedido.artista.length > 22 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
+                                    <div :class="pedido.artista.length > 18 ? 'marquee-container mt-0.5' : 'mt-0.5'">
+                                        <p class="text-[12px] font-semibold text-gray-300 leading-none" :class="pedido.artista.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
                                     </div>
                                 </div>
 
