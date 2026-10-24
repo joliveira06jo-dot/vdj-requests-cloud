@@ -19,7 +19,7 @@
             margin: 0;
             padding: 0;
         }
-        input:focus { outline: none; }
+        input:focus, select:focus { outline: none; }
         
         .fundo-estatico {
             position: fixed;
@@ -41,7 +41,6 @@
             animation: pulseZoom 4s infinite ease-in-out;
         }
 
-        /* Efeito Marquee */
         .marquee-container {
             display: flex;
             overflow: hidden;
@@ -61,7 +60,6 @@
             100% { transform: translateX(-100%); }
         }
 
-        /* Barra de rolagem customizada para o painel "A seguir" */
         .custom-scroll::-webkit-scrollbar {
             width: 5px;
         }
@@ -73,10 +71,16 @@
             background: rgba(255, 255, 255, 0.25);
             border-radius: 10px;
         }
+
+        /* Estilização nativa de select para esconder setinha feia e manter o estilo do protótipo */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
     </style>
 </head>
 <body>
-    <!-- Container principal travado na altura real do dispositivo (100dvh) -->
     <div id="app" class="max-w-md mx-auto relative h-[100dvh] flex flex-col font-['Poppins']">
         
         <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
@@ -129,7 +133,7 @@
         <!-- ================= TELA 2: PRINCIPAL (PISTA) ================= -->
         <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto">
             
-            <button @click="abrirBusca" class="w-full bg-[#1c1c1c] text-white font-black text-[32px] tracking-tight py-5 rounded-full mb-6 flex justify-between items-center pl-9 pr-3 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-transform active:scale-95 border border-white/10 btn-animado shrink-0">
+            <button @click="telaAtual = 'busca'" class="w-full bg-[#1c1c1c] text-white font-black text-[32px] tracking-tight py-5 rounded-full mb-6 flex justify-between items-center pl-9 pr-3 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-transform active:scale-95 border border-white/10 btn-animado shrink-0">
                 PEDIR MÚSICA
                 <div class="bg-white rounded-full w-14 h-14 flex items-center justify-center text-black shrink-0 shadow-lg">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 12h14M12 5l7 7-7 7"></path></svg>
@@ -182,48 +186,30 @@
         </div>
 
         <!-- ================= TELA 3: FILA EXPANDIDA ================= -->
-        <!-- flex-1 e min-h-0 forçam o bloco a respeitar a altura restante da tela sem estourar pro rodapé -->
         <div v-if="telaAtual === 'proximas'" class="flex flex-col flex-1 w-full px-5 pb-5 min-h-0">
-            
             <div class="bg-[#2a2a2a] rounded-[2.5rem] pt-6 pb-2 px-2 w-full shadow-2xl flex-1 flex flex-col border border-white/10 min-h-0">
-                
                 <h3 class="text-center font-bold text-[22px] mb-4 text-white tracking-wide shrink-0">A seguir</h3>
-                
-                <!-- Área estrita de rolagem com scroll customizado -->
                 <div class="flex-1 overflow-y-auto custom-scroll px-4">
                     <div class="space-y-4 pt-2 pb-4">
-                        
                         <div v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-[3.5rem] pr-4 flex items-center gap-2 shadow-md ml-3">
-                            <!-- Capa vazando sobre a margem esquerda com segurança -->
                             <img :src="musica.capa" class="absolute -left-3 w-[72px] h-[72px] rounded-xl object-cover shadow-xl bg-zinc-300 shrink-0 border-2 border-white">
-                            
-                            <!-- Lógica de Marquee -->
                             <div class="flex-1 min-w-0 pl-2 pr-2 overflow-hidden relative">
                                 <div :class="musica.titulo.length > 20 ? 'marquee-container' : ''">
-                                    <h4 class="font-extrabold text-[16px] leading-tight text-black" :class="musica.titulo.length > 20 ? 'marquee-text' : 'truncate'">
-                                        {{ musica.titulo }}
-                                    </h4>
+                                    <h4 class="font-extrabold text-[16px] leading-tight text-black" :class="musica.titulo.length > 20 ? 'marquee-text' : 'truncate'">{{ musica.titulo }}</h4>
                                 </div>
                                 <div :class="musica.artista.length > 25 ? 'marquee-container mt-1' : 'mt-1'">
-                                    <p class="text-[13px] text-[#555555]" :class="musica.artista.length > 25 ? 'marquee-text' : 'truncate'">
-                                        {{ musica.artista }}
-                                    </p>
+                                    <p class="text-[13px] text-[#555555]" :class="musica.artista.length > 25 ? 'marquee-text' : 'truncate'">{{ musica.artista }}</p>
                                 </div>
                             </div>
-
-                            <!-- Info Posicional (Deck) -->
                             <div class="text-center px-2 shrink-0 border-l border-[#d0d0d0]">
                                 <p class="text-[10px] font-medium text-gray-500 leading-none lowercase tracking-wide">posição</p>
                                 <p class="font-black text-[24px] leading-none my-0.5 text-black">{{ index + 2 }}</p>
                                 <p class="text-[9px] font-medium text-gray-500 leading-none lowercase tracking-wide">no deck do DJ</p>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
-
-            <!-- Botão Fixo na base, fora do container de rolagem -->
             <div class="mt-4 shrink-0">
                 <button @click="telaAtual = 'principal'" class="w-full bg-[#111111] text-white font-black text-[24px] tracking-tight py-4 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
                     <div class="bg-white rounded-full w-12 h-12 flex items-center justify-center text-black shrink-0 shadow-md">
@@ -234,10 +220,137 @@
             </div>
         </div>
 
+
+        <!-- ================= TELA 4: PEDIDO MUSICAL (BUSCA) ================= -->
+        <div v-if="telaAtual === 'busca'" class="flex flex-col flex-1 w-full px-5 pb-5 overflow-y-auto hide-scroll">
+            
+            <!-- Card Superior: O Motor de Busca -->
+            <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl mb-4 border border-white/10 shrink-0">
+                
+                <h2 class="text-center font-extrabold text-[22px] mb-5 text-white flex items-center justify-center gap-2">
+                    💿 PEDIDO MUSICAL
+                </h2>
+
+                <!-- Tabs (Abas) -->
+                <div class="flex items-center justify-between bg-black/40 rounded-full p-1 mb-6 border border-white/10">
+                    <button class="flex-1 bg-white text-black font-bold text-[11px] py-3 rounded-full shadow-md transition-colors flex items-center justify-center gap-1">
+                        🎵 PEDIR MÚSICA PARA A PISTA
+                    </button>
+                    <!-- Aba Inativa aguardando desenvolvimento Karaokê -->
+                    <button class="flex-1 text-[#aaaaaa] font-semibold text-[11px] py-3 rounded-full transition-colors flex items-center justify-center gap-1">
+                        🎤 PEDIR PARA CANTAR
+                    </button>
+                </div>
+
+                <!-- Input Livre de Pesquisa com Auto-Complete Mockado -->
+                <label class="block text-center text-[13px] font-medium text-white mb-3">Pesquise o nome da música ou artista</label>
+                <div class="relative w-full mb-6">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input v-model="textoBusca" type="text" class="w-full bg-white text-black pl-12 pr-12 py-3.5 rounded-[1.25rem] text-[17px] font-bold shadow-inner" placeholder="">
+                    
+                    <button v-if="textoBusca" @click="limparBusca" class="absolute inset-y-0 right-0 pr-4 flex items-center text-black">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+
+                    <!-- Lista Suspendida de Resultados da Busca -->
+                    <div v-if="textoBusca && resultadosBusca.length > 0 && !musicaPronta" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto border-2 border-[#1c1c1c]">
+                        <div v-for="item in resultadosBusca" :key="item.id" @click="selecionarDaBusca(item)" class="px-4 py-3 border-b border-gray-200 cursor-pointer hover:bg-gray-100 flex flex-col">
+                            <span class="font-bold text-black text-[15px] truncate">{{ item.titulo }}</span>
+                            <span class="text-gray-500 text-[12px] font-medium truncate">{{ item.artista }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center text-[13px] font-medium text-white mb-4">ou use os campos abaixo</div>
+
+                <!-- Filtro em Cascata -->
+                <div class="flex items-center gap-3 mb-8">
+                    <!-- Select Artista -->
+                    <div class="relative flex-1">
+                        <select v-model="artistaSelecionado" @change="resetarMusica" class="w-full bg-white text-black font-bold text-[15px] py-3.5 pl-4 pr-10 rounded-[1.25rem] shadow-inner cursor-pointer">
+                            <option value="" disabled selected>Artista</option>
+                            <option v-for="art in artistasUnicos" :key="art" :value="art">{{ art }}</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-black">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+
+                    <!-- Select Música (Bloqueado Visualmente e Funcionalmente se Artista == '') -->
+                    <div class="relative flex-1">
+                        <select v-model="musicaSelecionada" :disabled="!artistaSelecionado" :class="!artistaSelecionado ? 'opacity-60 cursor-not-allowed bg-gray-200 text-gray-500' : 'bg-white text-black cursor-pointer shadow-inner'" class="w-full font-bold text-[15px] py-3.5 pl-4 pr-10 rounded-[1.25rem]">
+                            <option value="" disabled selected>Música</option>
+                            <option v-for="mus in musicasDoArtista" :key="mus.id" :value="mus">{{ mus.titulo }}</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none" :class="!artistaSelecionado ? 'text-gray-500' : 'text-black'">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão CTA Final (Inicia Bloqueado, só acende se musicaSelecionada for válida) -->
+                <button @click="confirmarPedido" :disabled="!musicaPronta" class="w-full bg-white text-[#1c1c1c] font-black text-[28px] tracking-tight py-4 rounded-full flex justify-between items-center pl-8 pr-2.5 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-transform active:scale-95 border-2 border-transparent disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span class="flex-1 text-center">PEDIR MÚSICA</span>
+                    <div class="bg-[#1c1c1c] rounded-full w-14 h-14 flex items-center justify-center text-white shrink-0 shadow-md">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                    </div>
+                </button>
+            </div>
+
+
+            <!-- Card Inferior: Histórico do Usuário -->
+            <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl shrink-0 border border-white/10 mb-4">
+                <h3 class="text-center font-bold text-[18px] mb-5 text-white tracking-wide">MEUS PEDIDOS</h3>
+                
+                <div class="space-y-3">
+                    <div v-for="(pedido, index) in meusPedidosLocal" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-2.5 pl-3 pr-3 flex items-center gap-3 shadow-md">
+                        <img :src="pedido.capa" class="w-[60px] h-[60px] rounded-xl object-cover shadow-md bg-zinc-300 shrink-0 border-2 border-white">
+                        
+                        <div class="flex-1 min-w-0 pr-1">
+                            <h4 class="font-extrabold text-[15px] truncate leading-tight text-black">{{ pedido.titulo }}</h4>
+                            <p class="text-[12px] text-[#555555] truncate mt-0.5">{{ pedido.artista }}</p>
+                        </div>
+
+                        <!-- Lógica Condicional das Tags Dinâmicas -->
+                        <div class="flex flex-col items-center justify-center shrink-0 w-[60px]">
+                            <!-- TAG AMARELA: NA FILA -->
+                            <div v-if="pedido.status === 'fila'" class="flex flex-col items-center">
+                                <div class="bg-[#fbc02d] rounded-full p-2 mb-0.5 shadow-sm">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <span class="text-[#fbc02d] font-black text-[9px] uppercase tracking-tighter">NA FILA</span>
+                            </div>
+
+                            <!-- TAG CINZA: JÁ TOCOU -->
+                            <div v-if="pedido.status === 'tocado'" class="flex flex-col items-center">
+                                <div class="bg-[#555555] rounded-full p-2 mb-0.5 shadow-sm">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <span class="text-[#555555] font-black text-[9px] uppercase tracking-tighter">JÁ TOCOU</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão Fixo no Rodapé (Cinza Claro) -->
+            <div class="shrink-0 mt-2">
+                <button @click="telaAtual = 'proximas'" class="w-full bg-[#6a6a6a] text-white font-black text-[22px] tracking-tight py-3 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
+                    <span class="flex-1 text-center pl-10">VER FILA DE ESPERA</span>
+                    <div class="bg-white rounded-full w-12 h-12 flex items-center justify-center text-gray-500 shrink-0 shadow-md">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </button>
+            </div>
+
+        </div>
+
     </div>
 
     <script>
-        const { createApp, ref, onMounted } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
         
         const IMGBB_API_KEY = 'COLOQUE_A_SUA_CHAVE_AQUI'; 
 
@@ -256,16 +369,88 @@
                     { titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
                     { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
                     { titulo: 'Amo Noite E Dia (Acústico)', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' },
-                    { titulo: 'Vampirinha (Ao Vivo em Trancoso)', artista: 'Ivete Sangalo', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' },
-                    { titulo: 'Um Nome Super Longo De Uma Música Que Não Cabe No Card', artista: 'Artista com nome excessivamente grande também', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
-                    { titulo: 'Pense em Mim', artista: 'Leandro & Leonardo', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
-                    { titulo: 'Evidências', artista: 'Chitãozinho & Xororó', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' },
-                    { titulo: 'Dormi na Praça', artista: 'Bruno & Marrone', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' },
-                    { titulo: 'Boate Azul', artista: 'Bruno & Marrone', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
-                    { titulo: 'Ainda Ontem Chorei de Saudade', artista: 'João Mineiro & Marciano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
-                    { titulo: 'Não Aprendi Dizer Adeus', artista: 'Leandro & Leonardo', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' },
-                    { titulo: 'Fio de Cabelo', artista: 'Chitãozinho & Xororó', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' }
+                    { titulo: 'Vampirinha (Ao Vivo em Trancoso)', artista: 'Ivete Sangalo', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' }
                 ]);
+
+                // ==========================================
+                // LÓGICA DA TELA 4: MOTOR DE BUSCA (MOCKADO)
+                // ==========================================
+                const textoBusca = ref('');
+                const artistaSelecionado = ref('');
+                const musicaSelecionada = ref('');
+
+                // Mock do seu HD (Substituiremos pelo WebSocket depois)
+                const catalogoMock = ref([
+                    { id: 1, artista: 'Anitta', titulo: 'Na Batida (Ao Vivo)', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
+                    { id: 2, artista: 'Katy Perry', titulo: 'Dark Horse (part. Juicy J)', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
+                    { id: 3, artista: 'Jorge e Mateus', titulo: 'Primavera', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
+                    { id: 4, artista: 'Marília Mendonça', titulo: 'Graveto', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' },
+                    { id: 5, artista: 'Anitta', titulo: 'Show das Poderosas', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' }
+                ]);
+
+                const meusPedidosLocal = ref([
+                    { titulo: 'Na Batida (Ao Vivo)', artista: 'Anitta', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg', status: 'fila' },
+                    { titulo: 'Dark Horse (part. Juicy J)', artista: 'Katy Perry', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg', status: 'tocado' }
+                ]);
+
+                const artistasUnicos = computed(() => {
+                    const artistas = catalogoMock.value.map(m => m.artista);
+                    return [...new Set(artistas)].sort();
+                });
+
+                const musicasDoArtista = computed(() => {
+                    if (!artistaSelecionado.value) return [];
+                    return catalogoMock.value.filter(m => m.artista === artistaSelecionado.value).sort((a, b) => a.titulo.localeCompare(b.titulo));
+                });
+
+                const resultadosBusca = computed(() => {
+                    if (!textoBusca.value || textoBusca.value.length < 2) return [];
+                    const termo = textoBusca.value.toLowerCase();
+                    return catalogoMock.value.filter(m => 
+                        m.artista.toLowerCase().includes(termo) || m.titulo.toLowerCase().includes(termo)
+                    );
+                });
+
+                const musicaPronta = computed(() => {
+                    return musicaSelecionada.value !== '' && musicaSelecionada.value != null;
+                });
+
+                const limparBusca = () => {
+                    textoBusca.value = '';
+                };
+
+                const resetarMusica = () => {
+                    musicaSelecionada.value = '';
+                    textoBusca.value = ''; // Limpa a barra de cima se escolher pelo select
+                };
+
+                const selecionarDaBusca = (musica) => {
+                    artistaSelecionado.value = musica.artista;
+                    // O DOM precisa de um tick para popular o select de musicas antes de setar o value, mas o Vue reativo lida bem com isso
+                    setTimeout(() => {
+                        musicaSelecionada.value = musica;
+                        textoBusca.value = `${musica.titulo} - ${musica.artista}`; // Feedback visual
+                    }, 50);
+                };
+
+                const confirmarPedido = () => {
+                    if (!musicaPronta.value) return;
+                    
+                    meusPedidosLocal.value.unshift({
+                        titulo: musicaSelecionada.value.titulo,
+                        artista: musicaSelecionada.value.artista,
+                        capa: musicaSelecionada.value.capa,
+                        status: 'fila'
+                    });
+                    
+                    alert('Pedido enviado com sucesso! 🚀');
+                    
+                    // Reset do form
+                    artistaSelecionado.value = '';
+                    musicaSelecionada.value = '';
+                    textoBusca.value = '';
+                };
+                // ==========================================
 
                 onMounted(() => {
                     const savedName = localStorage.getItem('vdj_nome');
@@ -305,11 +490,15 @@
                     telaAtual.value = 'principal';
                 };
 
-                const abrirBusca = () => alert('Mock: Transição para Tela de Busca');
+                const abrirBusca = () => {
+                    telaAtual.value = 'busca';
+                };
 
                 return {
                     telaAtual, temaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
-                    tocandoAgora, proximasMusicas, abrirBusca
+                    tocandoAgora, proximasMusicas, abrirBusca,
+                    textoBusca, artistaSelecionado, musicaSelecionada, artistasUnicos, musicasDoArtista,
+                    resultadosBusca, limparBusca, resetarMusica, selecionarDaBusca, confirmarPedido, musicaPronta, meusPedidosLocal
                 }
             }
         }).mount('#app');
