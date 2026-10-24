@@ -34,22 +34,22 @@
     </style>
 </head>
 <body>
-    <div id="app" class="max-w-md mx-auto relative min-h-screen flex flex-col font-['Poppins']">
+    <div id="app" class="max-w-md mx-auto relative min-h-screen flex flex-col font-['Poppins'] pb-10">
         
-        <!-- Fundo Físico Estático (Não se mexe ao rolar) -->
+        <!-- Fundo Físico Estático Absoluto -->
         <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
-        <div class="fixed inset-0 bg-black/10 -z-10"></div>
+        <div class="fixed inset-0 bg-black/15 -z-10"></div>
 
         <!-- TELA 1: CADASTRO -->
-        <div v-if="telaAtual === 'cadastro'" class="flex flex-col w-full px-5 pt-4 pb-8">
-            <!-- Header Fixo Padronizado idêntico à Tela Principal -->
-            <div class="relative flex justify-center items-center mb-6 h-[60px] w-full">
+        <div v-if="telaAtual === 'cadastro'" class="flex flex-col w-full px-5 pt-8 pb-8">
+            <!-- Header com respiro superior -->
+            <div class="relative flex justify-center items-center mb-8 h-[65px] w-full">
                 <img src="logo-vdj.png" alt="VirtualDJ" class="w-[240px] object-contain drop-shadow-2xl">
             </div>
 
-            <div class="bg-[#222222] rounded-[2rem] p-7 w-full shadow-2xl">
+            <div class="bg-[#222222] rounded-[2.5rem] p-7 w-full shadow-2xl">
                 <label class="block text-center text-[11px] font-semibold text-white mb-3 tracking-[0.15em]">INSIRA O SEU NOME</label>
-                <input v-model="nome" type="text" class="w-full bg-white text-black px-6 py-3.5 rounded-full mb-8 text-center text-xl font-bold shadow-inner" placeholder="">
+                <input v-model="nome" type="text" class="w-full bg-white text-black px-6 py-4 rounded-full mb-8 text-center text-xl font-bold shadow-inner" placeholder="">
 
                 <div class="w-full h-px bg-[#333333] mb-6"></div>
 
@@ -67,7 +67,7 @@
                     </label>
                 </div>
 
-                <button @click="avancar" :disabled="!nome || uploading" class="w-full bg-[#7a7a7a] text-black font-extrabold text-[19px] py-3.5 rounded-full disabled:opacity-50 flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-md">
+                <button @click="avancar" :disabled="!nome || uploading" class="w-full bg-[#7a7a7a] text-black font-extrabold text-[19px] py-4 rounded-full disabled:opacity-50 flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-md">
                     AVANÇAR
                     <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7-7 7"></path></svg>
                 </button>
@@ -75,24 +75,24 @@
         </div>
 
         <!-- TELA 2: PRINCIPAL (PISTA) -->
-        <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-8 pt-4">
-            <!-- Header Fixo Perfeitamente Alinhado -->
-            <div class="relative flex justify-center items-center mb-6 h-[60px] w-full">
+        <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-6 pt-6">
+            <!-- Header Fixo com Respiro -->
+            <div class="relative flex justify-center items-center mb-6 h-[65px] w-full">
                 <img src="logo-vdj.png" alt="VirtualDJ" class="w-[240px] object-contain drop-shadow-2xl">
                 <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-0 w-[52px] h-[52px] rounded-full object-cover border-2 border-white/20 cursor-pointer shadow-xl self-center">
             </div>
 
-            <!-- Botão CTA -->
-            <button @click="abrirBusca" class="w-full bg-[#1a1a1a] text-white font-black text-[22px] py-4 rounded-full mb-6 flex justify-between items-center pl-8 pr-2 shadow-2xl transition-transform active:scale-95">
+            <!-- Botão CTA Pedir Música (Com espaçamento adequado e texto dominante) -->
+            <button @click="abrirBusca" class="w-full bg-[#1a1a1a] text-white font-black text-[25px] tracking-tight py-4 rounded-full mb-6 flex justify-between items-center pl-8 pr-2 shadow-2xl transition-transform active:scale-95 border border-white/10">
                 PEDIR MÚSICA
-                <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center text-black">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                <div class="bg-white rounded-full w-11 h-11 flex items-center justify-center text-black shrink-0">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 12h14M12 5l7 7-7 7"></path></svg>
                 </div>
             </button>
 
-            <!-- Card Automix -->
-            <div class="bg-[#222222] rounded-[2rem] p-5 w-full shadow-2xl">
-                <div class="flex items-center justify-center gap-2 mb-3 text-[11px] font-bold text-white tracking-widest">
+            <!-- Card Automix Principal (Tocando Agora e A Seguir) -->
+            <div class="bg-[#222222] rounded-[2.5rem] p-5 w-full shadow-2xl mb-6">
+                <div class="flex items-center justify-center gap-2 mb-3 text-[13px] font-extrabold text-white tracking-[0.15em]">
                     <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
                     TOCANDO AGORA
                 </div>
@@ -107,32 +107,39 @@
 
                 <div class="w-full h-px bg-[#333333] mb-5"></div>
 
-                <div class="">
+                <div>
                     <h3 class="text-center font-bold text-[17px] mb-4 text-white tracking-wide">A seguir</h3>
                     
-                    <div class="space-y-3 mb-6">
-                        <div v-for="(musica, index) in proximasMusicas" :key="index" class="bg-[#f0f0f0] text-black rounded-[1.25rem] p-2.5 flex items-center gap-3">
-                            <img :src="musica.capa" class="w-14 h-14 rounded-xl object-cover shadow-sm bg-zinc-300">
-                            <div class="flex-1 min-w-0">
-                                <h4 class="font-extrabold text-[15px] truncate leading-tight">{{ musica.titulo }}</h4>
+                    <!-- Fila de Espera (Com capas quadradas maiores sobrepostas ao bloco) -->
+                    <div class="space-y-4">
+                        <div v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-4 pr-3 flex items-center gap-3 shadow-md">
+                            <!-- Capa Quadrada Maior que Ultrapassa o Bloco -->
+                            <img :src="musica.capa" class="w-16 h-16 rounded-xl object-cover shadow-lg bg-zinc-300 shrink-0">
+                            
+                            <!-- Info da Música -->
+                            <div class="flex-1 min-w-0 pr-1">
+                                <h4 class="font-extrabold text-[15px] truncate leading-tight text-black">{{ musica.titulo }}</h4>
                                 <p class="text-[12px] text-[#555555] truncate mt-0.5">{{ musica.artista }}</p>
                             </div>
-                            <div class="text-center px-3 border-l border-[#d0d0d0]">
-                                <p class="text-[8px] font-bold text-gray-500 leading-none uppercase">posição</p>
-                                <p class="font-black text-[22px] leading-none my-1">{{ index + 2 }}</p>
-                                <p class="text-[8px] font-bold text-gray-500 leading-none uppercase">no deck</p>
+
+                            <!-- Posição no Deck -->
+                            <div class="text-center px-3 border-l border-[#d0d0d0] shrink-0">
+                                <p class="text-[8px] font-bold text-gray-500 leading-none uppercase tracking-wider">posição</p>
+                                <p class="font-black text-[22px] leading-none my-1 text-black">{{ index + 2 }}</p>
+                                <p class="text-[8px] font-bold text-gray-500 leading-none uppercase tracking-wider">no deck</p>
                             </div>
                         </div>
                     </div>
-
-                    <button @click="verProximas" class="w-full bg-black text-white font-extrabold text-[17px] py-3.5 rounded-full flex items-center justify-between pl-6 pr-1.5 transition-transform active:scale-95 shadow-lg">
-                        VER PRÓXIMAS
-                        <div class="bg-white rounded-full w-8 h-8 flex items-center justify-center text-black">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
-                        </div>
-                    </button>
                 </div>
             </div>
+
+            <!-- Botão Independente no Rodapé ("Ver Próximas") -->
+            <button @click="verProximas" class="w-full bg-[#1a1a1a] text-white font-extrabold text-[19px] py-4 rounded-full flex items-center justify-between pl-8 pr-2 shadow-2xl transition-transform active:scale-95 border border-white/10">
+                VER PRÓXIMAS
+                <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center text-black shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+            </button>
         </div>
     </div>
 
