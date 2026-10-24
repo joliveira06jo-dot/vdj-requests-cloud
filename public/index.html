@@ -16,29 +16,20 @@
             background-color: #000; 
             color: white; 
             overflow-x: hidden;
-            min-height: 100vh;
             margin: 0;
             padding: 0;
             position: relative;
         }
         input:focus { outline: none; }
         
-        /* Fundo fixo universal blindado por CSS puro */
-        .fundo-app-ativo {
-            background-image: url('fundo-app.png');
-        }
-        .fundo-karaoke-ativo {
-            background-image: url('fundo-thevoice-app.png');
-        }
+        /* Fundo fixo blindado absoluto */
         .fundo-estatico {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
+            object-fit: cover;
             z-index: -10;
         }
 
@@ -53,10 +44,11 @@
         }
     </style>
 </head>
-<body :class="temaAtual === 'karaoke' ? 'fundo-karaoke-ativo' : 'fundo-app-ativo'" class="fundo-estatico overflow-y-auto">
+<body class="overflow-y-auto">
     <div id="app" class="max-w-md mx-auto relative min-h-screen flex flex-col font-['Poppins'] pb-12">
         
-        <!-- Camada escura de contraste para leitura -->
+        <!-- Fundo Físico Estático Absoluto (Garantido por Tag HTML) -->
+        <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
         <div class="fixed inset-0 bg-black/15 -z-10 pointer-events-none"></div>
 
         <!-- TELA 1: CADASTRO -->
