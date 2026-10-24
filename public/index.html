@@ -41,22 +41,27 @@
             animation: pulseZoom 4s infinite ease-in-out;
         }
 
-        /* Efeito de rolagem de texto (Marquee CSS) para textos longos */
+        /* Efeito de rolagem de texto (Marquee CSS) com bordas esfumaçadas */
         .marquee-container {
             display: flex;
             overflow: hidden;
             white-space: nowrap;
             width: 100%;
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         }
         .marquee-text {
-            animation: marquee 8s linear infinite;
+            display: inline-block;
+            padding-right: 15px;
+            animation: marquee 9s linear infinite;
         }
         @keyframes marquee {
-            0%   { transform: translateX(10%); }
+            0%   { transform: translateX(5%); }
+            15%  { transform: translateX(5%); } /* Pausa rápida para leitura inicial */
             100% { transform: translateX(-100%); }
         }
 
-        /* Ocultar barra de rolagem nativa para manter design limpo (protótipo) */
+        /* Ocultar barra de rolagem nativa para manter design limpo */
         .hide-scroll::-webkit-scrollbar {
             display: none;
         }
@@ -180,17 +185,19 @@
         <!-- ================= TELA 3: FILA EXPANDIDA ================= -->
         <div v-if="telaAtual === 'proximas'" class="flex flex-col flex-1 w-full px-5 pb-4 h-full relative">
             
-            <div class="bg-[#2a2a2a] rounded-[2.5rem] p-6 w-full shadow-2xl flex-1 flex flex-col border border-white/10 min-h-[400px]">
+            <div class="bg-[#2a2a2a] rounded-[2.5rem] pt-6 pb-2 px-6 w-full shadow-2xl flex-1 flex flex-col border border-white/10 min-h-[400px]">
                 
-                <h3 class="text-center font-bold text-[22px] mb-6 text-white tracking-wide">A seguir</h3>
+                <h3 class="text-center font-bold text-[22px] mb-5 text-white tracking-wide shrink-0">A seguir</h3>
                 
-                <!-- Área rolável ocultando a barra nativa -->
-                <div class="space-y-4 pt-1 flex-1 overflow-y-auto hide-scroll pb-6">
-                    <div v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-16 pr-4 flex items-center gap-3 shadow-md">
+                <!-- Área rolável com px-4 e -mx-4 para expandir o limite de corte invisível (previne corte da capa) -->
+                <div class="space-y-4 pt-1 flex-1 overflow-y-auto hide-scroll pb-6 px-4 -mx-4">
+                    
+                    <!-- mx-4 recompõe as margens reais do card centralizando visualmente, liberando a flutuação -left-3 -->
+                    <div v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-16 pr-4 flex items-center gap-3 shadow-md mx-4">
                         
                         <img :src="musica.capa" class="absolute -left-3 w-[72px] h-[72px] rounded-xl object-cover shadow-xl bg-zinc-300 shrink-0 border-2 border-white">
                         
-                        <!-- Lógica de Marquee: Se o texto for longo, aplica o carrossel, se não, apenas trunca -->
+                        <!-- Lógica de Marquee: Se o texto for longo, aplica o carrossel -->
                         <div class="flex-1 min-w-0 pl-2 pr-2 overflow-hidden relative">
                             <!-- Título da música -->
                             <div :class="musica.titulo.length > 20 ? 'marquee-container' : ''">
@@ -213,6 +220,7 @@
                             <p class="text-[9px] font-medium text-gray-500 leading-none lowercase tracking-wide">no deck do DJ</p>
                         </div>
                     </div>
+
                 </div>
             </div>
 
@@ -245,13 +253,20 @@
 
                 const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
                 
-                // Array expandido para testar o scroll e o marquee
+                // Array massivo para testar o scroll perfeitamente!
                 const proximasMusicas = ref([
                     { titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
                     { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
                     { titulo: 'Amo Noite E Dia (Acústico)', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' },
-                    { titulo: 'Vampirinha (Ao Vivo em Trancoso - Edição Especial)', artista: 'Ivete Sangalo', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' },
-                    { titulo: 'Um Nome Super Longo De Uma Música Que Não Cabe No Card', artista: 'Artista com nome excessivamente grande também', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' }
+                    { titulo: 'Vampirinha (Ao Vivo em Trancoso)', artista: 'Ivete Sangalo', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' },
+                    { titulo: 'Um Nome Super Longo De Uma Música Que Não Cabe No Card', artista: 'Artista com nome excessivamente grande também', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
+                    { titulo: 'Pense em Mim', artista: 'Leandro & Leonardo', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
+                    { titulo: 'Evidências', artista: 'Chitãozinho & Xororó', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' },
+                    { titulo: 'Dormi na Praça', artista: 'Bruno & Marrone', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' },
+                    { titulo: 'Boate Azul', artista: 'Bruno & Marrone', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
+                    { titulo: 'Ainda Ontem Chorei de Saudade', artista: 'João Mineiro & Marciano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
+                    { titulo: 'Não Aprendi Dizer Adeus', artista: 'Leandro & Leonardo', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' },
+                    { titulo: 'Fio de Cabelo', artista: 'Chitãozinho & Xororó', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' }
                 ]);
 
                 onMounted(() => {
