@@ -88,12 +88,12 @@
     </style>
 </head>
 <body>
-    <div id="app" class="max-w-md mx-auto relative h-[100dvh] flex flex-col font-['Poppins']">
+    <div id="app" class="max-w-md mx-auto relative h-[100dvh] flex flex-col font-['Poppins'] overflow-hidden">
         
         <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
         <div class="fixed inset-0 bg-black/20 -z-10"></div>
 
-        <!-- ================= NOTIFICAÇÃO (TOAST) DINÂMICA ================= -->
+        <!-- ================= NOTIFICAÇÃO (TOAST) ================= -->
         <transition name="toast">
             <div v-if="toast.ativa" class="fixed bottom-10 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none">
                 <div :class="toast.tipo === 'sucesso' ? 'bg-[#22c55e]' : 'bg-[#fbc02d] text-black'" class="font-bold text-[14px] py-4 px-6 rounded-full shadow-2xl flex items-center gap-3">
@@ -238,7 +238,6 @@
             </div>
         </div>
 
-
         <!-- ================= TELA 4: PEDIDO MUSICAL (BUSCA) ================= -->
         <div v-if="telaAtual === 'busca'" class="flex flex-col flex-1 w-full px-5 pb-5 overflow-y-auto custom-scroll">
             
@@ -318,9 +317,10 @@
         </div>
 
         <!-- ================= TELA 5: FILA DE ESPERA E JÁ TOCADOS ================= -->
-        <div v-if="telaAtual === 'fila_espera'" class="flex flex-col flex-1 w-full px-4 min-h-0 relative h-[100dvh]">
+        <div v-if="telaAtual === 'fila_espera'" class="flex flex-col flex-1 w-full px-4 relative min-h-0 pb-24">
             
-            <div class="bg-[#242627] rounded-[36px] pt-4 pb-[85px] px-3 w-full shadow-2xl flex-1 flex flex-col min-h-0 border border-white/10 my-4">
+            <!-- CAIXA CINZA (Isolada) -->
+            <div class="bg-[#242627] rounded-[36px] pt-4 pb-4 px-3 w-full shadow-2xl flex-1 flex flex-col min-h-0 border border-white/10 mt-2">
                 
                 <!-- Título Fila de Espera -->
                 <div class="bg-[#18191B] rounded-full py-2.5 px-4 mb-3 shrink-0 shadow-lg mx-2 flex items-center justify-center">
@@ -343,18 +343,13 @@
                     <div class="space-y-4 pt-1 pb-2">
                         <div v-for="(pedido, index) in filaEsperaExibida" :key="'fila-'+index" class="relative ml-8">
                             
-                            <!-- Texto externo (Acima do card) -->
                             <p class="text-[11px] text-gray-200 mb-0.5 pl-[48px] leading-tight relative z-0">
                                 <span class="font-black uppercase text-white">{{ pedido.pedinte }}</span> já pediu para tocar
                             </p>
                             
-                            <!-- Corpo do Card -->
                             <div class="relative bg-[#C8C8C8] rounded-r-2xl rounded-l-full h-[64px] flex items-center justify-between shadow-md pr-1.5">
-                                
-                                <!-- Avatar Flutuante -->
                                 <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10">
                                 
-                                <!-- Metadados da Música com Letreiro Marquee -->
                                 <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full overflow-hidden relative">
                                     <div :class="pedido.titulo.length > 18 ? 'marquee-container' : ''">
                                         <h4 class="font-black text-[15px] text-black leading-snug" :class="pedido.titulo.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
@@ -364,7 +359,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Capa e Selo -->
                                 <div class="flex items-center gap-1.5 shrink-0 h-full">
                                     <img :src="pedido.capa" class="h-full w-[64px] object-cover rounded-none border border-black/10 shrink-0">
                                     <div class="bg-gradient-to-b from-[#FBBF24] to-[#F59E0B] h-[52px] w-[48px] rounded-xl flex flex-col items-center justify-center shadow-sm shrink-0">
@@ -397,7 +391,6 @@
                             <div class="relative bg-[#5B5E63] rounded-r-2xl rounded-l-full h-[64px] flex items-center justify-between shadow-md pr-1.5">
                                 <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10 grayscale opacity-90">
                                 
-                                <!-- Metadados da Música com Letreiro Marquee -->
                                 <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full overflow-hidden relative">
                                     <div :class="pedido.titulo.length > 18 ? 'marquee-container' : ''">
                                         <h4 class="font-black text-[15px] text-white leading-snug" :class="pedido.titulo.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
@@ -421,11 +414,10 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <!-- Botão Fixo/Flutuante no Rodapé -->
-            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-[85%] max-w-sm z-50">
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-sm z-50">
                 <button @click="telaAtual = 'principal'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
@@ -433,7 +425,6 @@
                     <span>VOLTAR AO INÍCIO</span>
                 </button>
             </div>
-
         </div>
 
     </div>
@@ -555,10 +546,83 @@
                     
                     const tituloEscolhido = musicaSelecionada.value.titulo;
 
-                    // Validação contra a fila geral
                     const duplicada = pedidosGerais.value.some(p => p.titulo === tituloEscolhido && p.status === 'fila');
 
                     if (duplicada) {
                         mostrarToast('aviso', 'Essa música já está na fila da pista!');
                     } else {
-                        //
+                        pedidosGerais.value.unshift({
+                            pedinte: nome.value || 'Usuário',
+                            avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
+                            titulo: musicaSelecionada.value.titulo,
+                            artista: musicaSelecionada.value.artista,
+                            capa: musicaSelecionada.value.capa,
+                            status: 'fila',
+                            hora: null
+                        });
+
+                        mostrarToast('sucesso', 'Pedido enviado com sucesso! 🚀');
+                    }
+                    
+                    artistaSelecionado.value = '';
+                    musicaSelecionada.value = '';
+                    textoBusca.value = '';
+                };
+
+                onMounted(() => {
+                    const savedName = localStorage.getItem('vdj_nome');
+                    const savedFoto = localStorage.getItem('vdj_foto');
+                    if (savedName) {
+                        nome.value = savedName;
+                        if (savedFoto) fotoUrl.value = savedFoto;
+                        telaAtual.value = 'principal';
+                    }
+                });
+
+                const processarFoto = async (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    fotoPreview.value = URL.createObjectURL(file);
+                    uploading.value = true;
+
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    try {
+                        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+                        const data = await res.json();
+                        if (data.success) fotoUrl.value = data.data.url;
+                    } catch (e) {
+                        alert('Falha na conexão com o ImgBB.');
+                        fotoPreview.value = '';
+                    } finally {
+                        uploading.value = false;
+                    }
+                };
+
+                const avancar = () => {
+                    localStorage.setItem('vdj_nome', nome.value);
+                    if (fotoUrl.value) localStorage.setItem('vdj_foto', fotoUrl.value);
+                    
+                    if(nome.value.toLowerCase() === 'julio') {
+                        pedidosGerais.value.forEach(p => {
+                            if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png';
+                        });
+                    }
+
+                    telaAtual.value = 'principal';
+                };
+
+                return {
+                    telaAtual, temaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
+                    tocandoAgora, proximasMusicas, 
+                    textoBusca, artistaSelecionado, musicaSelecionada, artistasUnicos, musicasDoArtista,
+                    resultadosBusca, atualizarBusca, limparBusca, resetarMusica, selecionarDaBusca, confirmarPedido, musicaPronta,
+                    toast, pedidosGerais, filaEsperaExibida, historicoTocadosExibido, apenasMeusPedidos
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
