@@ -78,7 +78,6 @@
             appearance: none;
         }
 
-        /* Animação suave para o Toast de Sucesso */
         .toast-enter-active, .toast-leave-active {
             transition: all 0.4s ease;
         }
@@ -94,12 +93,14 @@
         <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
         <div class="fixed inset-0 bg-black/20 -z-10"></div>
 
-        <!-- ================= NOTIFICAÇÃO (TOAST) CUSTOMIZADA ================= -->
+        <!-- ================= NOTIFICAÇÃO (TOAST) DINÂMICA ================= -->
         <transition name="toast">
-            <div v-if="notificacaoAtiva" class="fixed bottom-10 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none">
-                <div class="bg-[#22c55e] text-white font-bold text-[15px] py-4 px-6 rounded-full shadow-2xl flex items-center gap-3">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-                    Música enviada com sucesso!
+            <div v-if="toast.ativa" class="fixed bottom-10 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none">
+                <!-- A cor muda baseado no tipo: sucesso = verde, aviso = amarelo -->
+                <div :class="toast.tipo === 'sucesso' ? 'bg-[#22c55e]' : 'bg-[#fbc02d] text-black'" class="font-bold text-[14px] py-4 px-6 rounded-full shadow-2xl flex items-center gap-3">
+                    <svg v-if="toast.tipo === 'sucesso'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    <svg v-else class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    {{ toast.mensagem }}
                 </div>
             </div>
         </transition>
@@ -244,7 +245,6 @@
             
             <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl mb-4 border border-white/10 shrink-0 relative">
                 
-                <!-- Ícone fechar (X) simulando Modal -->
                 <button @click="telaAtual = 'principal'" class="absolute right-6 top-6 text-[#888888] hover:text-white transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -253,41 +253,35 @@
                     💿 PEDIDO MUSICAL
                 </h2>
 
-                <!-- Tabs (Abas) - FONTE AUMENTADA para 14px conforme solicitado -->
                 <div class="flex items-center justify-between bg-black/40 rounded-[2rem] p-1 mb-6 border border-white/10">
                     <button class="flex-1 bg-white text-black font-bold text-[14px] leading-tight py-3 px-1 rounded-[1.8rem] shadow-md transition-colors flex items-center justify-center gap-1.5 text-center">
                         <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.369 4.369 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/></svg>
                         PISTA
                     </button>
-                    <!-- Aba Inativa aguardando desenvolvimento Karaokê -->
                     <button class="flex-1 text-[#aaaaaa] font-semibold text-[14px] leading-tight py-3 px-1 rounded-[1.8rem] transition-colors flex items-center justify-center gap-1.5 text-center">
                         <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path></svg>
                         KARAOKÊ
                     </button>
                 </div>
 
-                <!-- Input Livre de Pesquisa (Evento @input para atualizar INSTANTANEAMENTE sem precisar de Enter) -->
                 <label class="block text-center text-[13px] font-medium text-white mb-3">Pesquise o nome da música ou artista</label>
                 <div class="relative w-full mb-6">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
                     
-                    <!-- Substituído v-model simples pelo evento nativo @input para forçar a reatividade mobile -->
                     <input :value="textoBusca" @input="atualizarBusca" type="text" class="w-full bg-white text-black pl-12 pr-12 py-3.5 rounded-[1.25rem] text-[17px] font-bold shadow-inner" placeholder="">
                     
                     <button v-if="textoBusca" @click="limparBusca" class="absolute inset-y-0 right-0 pr-4 flex items-center text-black">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
 
-                    <!-- Lista Suspendida de Resultados da Busca -->
                     <div v-if="textoBusca && resultadosBusca.length > 0 && !musicaPronta" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto border-2 border-[#1c1c1c] custom-scroll">
                         <div v-for="item in resultadosBusca" :key="item.id" @click="selecionarDaBusca(item)" class="px-4 py-3 border-b border-gray-200 cursor-pointer active:bg-gray-200 flex flex-col">
                             <span class="font-bold text-black text-[15px] truncate">{{ item.titulo }}</span>
                             <span class="text-gray-500 text-[12px] font-medium truncate">{{ item.artista }}</span>
                         </div>
                     </div>
-                    <!-- Estado Vazio -->
                     <div v-if="textoBusca && resultadosBusca.length === 0" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl p-4 border-2 border-[#1c1c1c] text-center">
                         <span class="font-bold text-black text-[14px]">Nenhum resultado encontrado.</span>
                     </div>
@@ -295,9 +289,7 @@
 
                 <div class="text-center text-[13px] font-medium text-white mb-4">ou use os campos abaixo</div>
 
-                <!-- Filtro em Cascata -->
                 <div class="flex items-center gap-3 mb-8">
-                    <!-- Select Artista -->
                     <div class="relative flex-1">
                         <select v-model="artistaSelecionado" @change="resetarMusica" class="w-full bg-white text-black font-bold text-[15px] py-3.5 pl-4 pr-10 rounded-[1.25rem] shadow-inner cursor-pointer">
                             <option value="" disabled selected>Artista</option>
@@ -308,7 +300,6 @@
                         </div>
                     </div>
 
-                    <!-- Select Música (Bloqueado Visualmente e Funcionalmente se Artista == '') -->
                     <div class="relative flex-1">
                         <select v-model="musicaSelecionada" :disabled="!artistaSelecionado" :class="!artistaSelecionado ? 'opacity-60 bg-gray-200 text-gray-500' : 'bg-white text-black cursor-pointer shadow-inner'" class="w-full font-bold text-[15px] py-3.5 pl-4 pr-10 rounded-[1.25rem]">
                             <option value="" disabled selected>Música</option>
@@ -320,7 +311,6 @@
                     </div>
                 </div>
 
-                <!-- Botão CTA Final -->
                 <button @click="confirmarPedido" :disabled="!musicaPronta" class="w-full bg-white text-[#1c1c1c] font-black text-[28px] tracking-tight py-4 rounded-full flex justify-between items-center pl-8 pr-2.5 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-transform active:scale-95 border-2 border-transparent disabled:opacity-50 disabled:active:scale-100">
                     <span class="flex-1 text-center">PEDIR MÚSICA</span>
                     <div class="bg-[#1c1c1c] rounded-full w-14 h-14 flex items-center justify-center text-white shrink-0 shadow-md">
@@ -363,7 +353,7 @@
                 </div>
             </div>
 
-            <!-- Botão Fixo no Rodapé (Cinza Claro) -->
+            <!-- Botão Fixo no Rodapé -->
             <div class="shrink-0 mt-2">
                 <button @click="telaAtual = 'proximas'" class="w-full bg-[#6a6a6a] text-white font-black text-[22px] tracking-tight py-3 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
                     <span class="flex-1 text-center pl-10">VER FILA DE ESPERA</span>
@@ -390,15 +380,16 @@
                 const fotoUrl = ref('');
                 const fotoPreview = ref('');
                 const uploading = ref(false);
-                const notificacaoAtiva = ref(false);
+                
+                // Controle do Toast (Notificação Dinâmica)
+                const toast = ref({ ativa: false, tipo: 'sucesso', mensagem: '' });
 
                 const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
                 
+                // Simulação da fila geral da pista
                 const proximasMusicas = ref([
                     { titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
-                    { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
-                    { titulo: 'Amo Noite E Dia (Acústico)', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' },
-                    { titulo: 'Vampirinha (Ao Vivo em Trancoso)', artista: 'Ivete Sangalo', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' }
+                    { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' }
                 ]);
 
                 // LÓGICA DA TELA 4
@@ -441,10 +432,9 @@
                     return musicaSelecionada.value !== '' && musicaSelecionada.value != null;
                 });
 
-                // Função para atualizar a busca instantaneamente (sem Enter)
                 const atualizarBusca = (event) => {
                     textoBusca.value = event.target.value;
-                    musicaSelecionada.value = ''; // Reseta se começar a digitar de novo
+                    musicaSelecionada.value = ''; 
                 };
 
                 const limparBusca = () => {
@@ -465,24 +455,45 @@
                     }, 50);
                 };
 
-                // Execução do Pedido (com Toast de Sucesso)
+                // Função para invocar o Toast
+                const mostrarToast = (tipo, mensagem) => {
+                    toast.value = { ativa: true, tipo, mensagem };
+                    setTimeout(() => {
+                        toast.value.ativa = false;
+                    }, 3000);
+                };
+
+                // Execução do Pedido (com validação de duplicidade)
                 const confirmarPedido = () => {
                     if (!musicaPronta.value) return;
                     
-                    meusPedidosLocal.value.unshift({
-                        titulo: musicaSelecionada.value.titulo,
-                        artista: musicaSelecionada.value.artista,
-                        capa: musicaSelecionada.value.capa,
-                        status: 'fila'
-                    });
+                    const tituloEscolhido = musicaSelecionada.value.titulo;
+
+                    // Verifica se a música já está na fila global (proximasMusicas) ou local (meusPedidosLocal)
+                    const duplicada = proximasMusicas.value.some(m => m.titulo === tituloEscolhido) || 
+                                      meusPedidosLocal.value.some(p => p.titulo === tituloEscolhido && p.status === 'fila');
+
+                    if (duplicada) {
+                        mostrarToast('aviso', 'Essa música já está na fila da pista!');
+                    } else {
+                        meusPedidosLocal.value.unshift({
+                            titulo: musicaSelecionada.value.titulo,
+                            artista: musicaSelecionada.value.artista,
+                            capa: musicaSelecionada.value.capa,
+                            status: 'fila'
+                        });
+                        
+                        // Push simulado pra fila global (só pra visualização no protótipo)
+                        proximasMusicas.value.push({
+                            titulo: musicaSelecionada.value.titulo,
+                            artista: musicaSelecionada.value.artista,
+                            capa: musicaSelecionada.value.capa
+                        });
+
+                        mostrarToast('sucesso', 'Pedido enviado com sucesso! 🚀');
+                    }
                     
-                    // Mostra a notificação em tela (Toast)
-                    notificacaoAtiva.value = true;
-                    setTimeout(() => {
-                        notificacaoAtiva.value = false;
-                    }, 3000);
-                    
-                    // Reset do form
+                    // Reset limpo do form
                     artistaSelecionado.value = '';
                     musicaSelecionada.value = '';
                     textoBusca.value = '';
@@ -535,7 +546,7 @@
                     tocandoAgora, proximasMusicas, abrirBusca,
                     textoBusca, artistaSelecionado, musicaSelecionada, artistasUnicos, musicasDoArtista,
                     resultadosBusca, atualizarBusca, limparBusca, resetarMusica, selecionarDaBusca, confirmarPedido, musicaPronta, meusPedidosLocal,
-                    notificacaoAtiva
+                    toast
                 }
             }
         }).mount('#app');
