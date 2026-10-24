@@ -46,7 +46,7 @@
 <body>
     <div id="app" class="max-w-md mx-auto relative min-h-screen flex flex-col font-['Poppins'] pb-10">
         
-        <!-- Fundo Físico Estático Absoluto (Garantido pela tag img reativa) -->
+        <!-- Fundo Físico Estático Absoluto -->
         <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
         <div class="fixed inset-0 bg-black/15 -z-10"></div>
 
@@ -85,10 +85,10 @@
 
         <!-- TELA 2: PRINCIPAL (PISTA) -->
         <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-6 pt-4">
-            <!-- Header Fixo Perfeitamente Alinhado com Altura de 75px -->
+            <!-- Header Fixo com Avatar Ajustado (65px x 65px e posicionado mais acima) -->
             <div class="relative flex justify-center items-center mb-4 h-[75px] w-full">
                 <img src="logo-vdj.png" alt="VirtualDJ" class="w-[260px] object-contain drop-shadow-2xl">
-                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-0 w-[54px] h-[54px] rounded-full object-cover border-2 border-white/20 cursor-pointer shadow-xl self-center">
+                <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-0 top-0 w-[65px] h-[65px] rounded-full object-cover border-2 border-white/20 cursor-pointer shadow-xl">
             </div>
 
             <!-- Botão CTA Pedir Música (#2d2d2d) -->
@@ -142,7 +142,7 @@
                 </div>
             </div>
 
-            <!-- Botão Independente no Rodapé ("Ver Próximas" - Texto ampliado p/ 22px, centralizado na altura compacta, cor #120a10) -->
+            <!-- Botão Independente no Rodapé ("Ver Próximas") -->
             <button @click="verProximas" class="w-full bg-[#120a10] text-white font-black text-[22px] tracking-tight py-3 px-6 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
                 <span class="flex-1 text-center pl-9">VER PRÓXIMAS</span>
                 <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center text-black shrink-0 shadow-md">
