@@ -104,48 +104,53 @@
             </div>
         </transition>
 
+        <!-- ================= CABEÇALHO GLOBAL FIXO (AGORA PRESENTE EM TODAS AS TELAS) ================= -->
+        <div class="relative flex justify-center items-center mt-6 mb-5 h-[65px] w-full px-7 shrink-0 z-40">
+            <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
+            <!-- A foto só aparece se NÃO estiver na tela de cadastro -->
+            <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-7 top-0 w-[65px] h-[65px] rounded-full object-cover border-[3px] border-white/20 cursor-pointer shadow-xl">
+        </div>
+
         <!-- ================= TELA 1: CADASTRO ================= -->
-        <div v-if="telaAtual === 'cadastro'" class="flex flex-col flex-1 w-full px-5 pt-8 pb-8 overflow-y-auto">
-            <div class="relative flex justify-center items-center mb-8 h-[60px] w-full shrink-0">
-                <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
-            </div>
+        <div v-if="telaAtual === 'cadastro'" class="flex flex-col flex-1 w-full px-5 pb-8 overflow-y-auto custom-scroll items-center">
+            
+            <div class="bg-[#262626] rounded-[36px] px-6 pt-8 pb-8 w-full shadow-2xl flex flex-col items-center text-center mt-2 border border-white/5">
+                
+                <label class="block text-sm font-extrabold text-white mb-4 tracking-widest uppercase">INSIRA O SEU NOME</label>
+                <input v-model="nome" type="text" class="w-full max-w-[320px] bg-white text-black px-6 py-3.5 rounded-[14px] mb-6 text-center text-xl font-bold shadow-inner" placeholder="">
 
-            <div class="bg-[#2a2a2a] rounded-[2.5rem] p-7 w-full shadow-2xl border border-white/10">
-                <label class="block text-center text-[12px] font-semibold text-white mb-3 tracking-[0.1em]">INSIRA O SEU NOME</label>
-                <input v-model="nome" type="text" class="w-full bg-white text-black px-6 py-4 rounded-full mb-8 text-center text-[22px] font-bold shadow-inner" placeholder="">
+                <div class="w-3/5 h-[1.5px] bg-white/20 mx-auto my-6"></div>
 
-                <div class="w-full h-px bg-[#3d3d3d] mb-6"></div>
-
-                <div class="text-center mb-8">
-                    <label class="block text-[12px] font-semibold text-white mb-2 tracking-[0.05em] leading-relaxed">ESCOLHA UMA FOTO PARA<br>APARECER NO TELÃO</label>
-                    <p class="text-[10px] text-[#999999] mb-6 leading-tight font-normal">*Opcional<br>Atenção: Se você não subir uma foto agora, saiba que não será possível carregar a foto depois.</p>
+                <div class="text-center mb-10 flex flex-col items-center w-full">
+                    <label class="block text-base font-black text-white mb-1.5 tracking-wider uppercase leading-snug">ESCOLHA UMA FOTO PARA<br>APARECER NO TELÃO</label>
+                    <p class="text-sm font-medium text-[#7C8089] mb-8">*Opcional</p>
                     
-                    <label class="inline-flex items-center justify-center w-[120px] h-[120px] bg-white text-black rounded-[2.5rem] cursor-pointer relative overflow-hidden transition-transform active:scale-95 shadow-lg">
+                    <!-- Componente Composto de Imagem + Selo Flutuante -->
+                    <label class="inline-flex items-center justify-center w-32 h-32 bg-white text-[#262626] rounded-[24px] cursor-pointer relative transition-transform active:scale-95 shadow-lg">
                         <input type="file" class="hidden" @change="processarFoto" accept="image/*">
-                        <img v-if="fotoPreview" :src="fotoPreview" class="absolute inset-0 w-full h-full object-cover">
+                        <img v-if="fotoPreview" :src="fotoPreview" class="absolute inset-0 w-full h-full object-cover rounded-[24px]">
+                        
+                        <!-- SVG da Paisagem (Ícone Base) -->
                         <div v-else class="relative w-full h-full flex items-center justify-center">
-                            <svg class="w-12 h-12 text-[#2a2a2a] absolute -ml-4" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-                            <div class="absolute right-1 top-1 bg-[#2a2a2a] text-white rounded-full w-8 h-8 flex items-center justify-center border-2 border-white shadow-sm">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                            </div>
+                            <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                         </div>
-                        <div v-if="uploading" class="absolute inset-0 bg-black/80 flex items-center justify-center text-white text-xs font-bold tracking-widest">ENVIANDO</div>
+
+                        <!-- Selo Flutuante de Upload (Seta) -->
+                        <div class="absolute -top-3 -right-3 w-12 h-12 bg-white rounded-full border-4 border-[#262626] flex items-center justify-center z-10 shadow-sm">
+                            <svg class="w-6 h-6 text-[#262626]" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        </div>
+                        
+                        <div v-if="uploading" class="absolute inset-0 bg-black/80 rounded-[24px] flex items-center justify-center text-white text-xs font-bold tracking-widest z-20">ENVIANDO</div>
                     </label>
                 </div>
 
-                <button @click="avancar" :disabled="!nome || uploading" class="w-full bg-[#e5e5e5] text-black font-extrabold text-[22px] py-4 rounded-full disabled:opacity-50 flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-md">
-                    AVANÇAR
-                    <div class="bg-white rounded-full w-8 h-8 flex items-center justify-center text-[#aaaaaa] shrink-0 shadow-sm border border-gray-200">
-                        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                <button @click="avancar" :disabled="!nome || uploading" class="w-full max-w-[290px] bg-[#D1D5DB] text-[#22252A] font-black text-xl tracking-wider h-14 px-6 rounded-full disabled:opacity-50 flex items-center justify-between transition-transform active:scale-95 shadow-[0_10px_25px_rgba(0,0,0,0.4)]">
+                    <span class="flex-1 text-center pl-4">AVANÇAR</span>
+                    <div class="bg-white rounded-full w-10 h-10 flex items-center justify-center shrink-0 shadow-sm">
+                        <svg class="w-5 h-5 text-[#9CA3AF]" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                     </div>
                 </button>
             </div>
-        </div>
-
-        <!-- ================= CABEÇALHO GLOBAL FIXO ================= -->
-        <div v-if="telaAtual !== 'cadastro'" class="relative flex justify-center items-center mt-6 mb-5 h-[65px] w-full px-7 shrink-0">
-            <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
-            <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-7 top-0 w-[65px] h-[65px] rounded-full object-cover border-[3px] border-white/20 cursor-pointer shadow-xl">
         </div>
 
         <!-- ================= TELA 2: PRINCIPAL (PISTA) ================= -->
@@ -319,15 +324,13 @@
         <!-- ================= TELA 5: FILA DE ESPERA E JÁ TOCADOS ================= -->
         <div v-if="telaAtual === 'fila_espera'" class="flex flex-col flex-1 w-full px-4 relative min-h-0 pb-24">
             
-            <!-- CAIXA CINZA (Isolada) -->
+            <!-- CAIXA CINZA -->
             <div class="bg-[#242627] rounded-[36px] pt-4 pb-4 px-3 w-full shadow-2xl flex-1 flex flex-col min-h-0 border border-white/10 mt-2">
                 
-                <!-- Título Fila de Espera -->
                 <div class="bg-[#18191B] rounded-full py-2.5 px-4 mb-3 shrink-0 shadow-lg mx-2 flex items-center justify-center">
                     <h3 class="font-black text-[22px] text-white tracking-wider">FILA DE ESPERA</h3>
                 </div>
                 
-                <!-- Toggle Switch -->
                 <div class="flex items-center justify-center mb-4 shrink-0 px-2">
                     <label class="flex items-center cursor-pointer gap-3">
                         <div class="relative inline-flex items-center">
@@ -338,7 +341,6 @@
                     </label>
                 </div>
 
-                <!-- Lista Fila de Espera (Scroll Independente 1) -->
                 <div class="flex-1 overflow-y-auto custom-scroll pr-2 min-h-[120px]">
                     <div class="space-y-4 pt-1 pb-2">
                         <div v-for="(pedido, index) in filaEsperaExibida" :key="'fila-'+index" class="relative ml-8">
@@ -374,12 +376,10 @@
                     </div>
                 </div>
 
-                <!-- Título JÁ TOCADOS -->
                 <div class="bg-[#4E5155] rounded-full py-2.5 px-4 mt-3 mb-3 shrink-0 shadow-lg mx-2 flex items-center justify-center relative z-20">
                     <h3 class="font-black text-[22px] text-white tracking-wider">JÁ TOCADOS</h3>
                 </div>
 
-                <!-- Lista Já Tocados (Scroll Independente 2) -->
                 <div class="flex-1 overflow-y-auto custom-scroll pr-2 min-h-[120px]">
                     <div class="space-y-4 pt-1 pb-2">
                         <div v-for="(pedido, index) in historicoTocadosExibido" :key="'tocado-'+index" class="relative ml-8">
