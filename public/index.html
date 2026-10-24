@@ -72,11 +72,19 @@
             border-radius: 10px;
         }
 
-        /* Estilização nativa de select para esconder setinha feia e manter o estilo do protótipo */
         select {
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
+        }
+
+        /* Animação suave para o Toast de Sucesso */
+        .toast-enter-active, .toast-leave-active {
+            transition: all 0.4s ease;
+        }
+        .toast-enter-from, .toast-leave-to {
+            opacity: 0;
+            transform: translateY(20px);
         }
     </style>
 </head>
@@ -85,6 +93,16 @@
         
         <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
         <div class="fixed inset-0 bg-black/20 -z-10"></div>
+
+        <!-- ================= NOTIFICAÇÃO (TOAST) CUSTOMIZADA ================= -->
+        <transition name="toast">
+            <div v-if="notificacaoAtiva" class="fixed bottom-10 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none">
+                <div class="bg-[#22c55e] text-white font-bold text-[15px] py-4 px-6 rounded-full shadow-2xl flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    Música enviada com sucesso!
+                </div>
+            </div>
+        </transition>
 
         <!-- ================= TELA 1: CADASTRO ================= -->
         <div v-if="telaAtual === 'cadastro'" class="flex flex-col flex-1 w-full px-5 pt-8 pb-8 overflow-y-auto">
@@ -131,7 +149,7 @@
         </div>
 
         <!-- ================= TELA 2: PRINCIPAL (PISTA) ================= -->
-        <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto">
+        <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
             
             <button @click="telaAtual = 'busca'" class="w-full bg-[#1c1c1c] text-white font-black text-[32px] tracking-tight py-5 rounded-full mb-6 flex justify-between items-center pl-9 pr-3 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-transform active:scale-95 border border-white/10 btn-animado shrink-0">
                 PEDIR MÚSICA
@@ -222,44 +240,56 @@
 
 
         <!-- ================= TELA 4: PEDIDO MUSICAL (BUSCA) ================= -->
-        <div v-if="telaAtual === 'busca'" class="flex flex-col flex-1 w-full px-5 pb-5 overflow-y-auto hide-scroll">
+        <div v-if="telaAtual === 'busca'" class="flex flex-col flex-1 w-full px-5 pb-5 overflow-y-auto custom-scroll">
             
-            <!-- Card Superior: O Motor de Busca -->
-            <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl mb-4 border border-white/10 shrink-0">
+            <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl mb-4 border border-white/10 shrink-0 relative">
                 
+                <!-- Ícone fechar (X) simulando Modal -->
+                <button @click="telaAtual = 'principal'" class="absolute right-6 top-6 text-[#888888] hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+
                 <h2 class="text-center font-extrabold text-[22px] mb-5 text-white flex items-center justify-center gap-2">
                     💿 PEDIDO MUSICAL
                 </h2>
 
-                <!-- Tabs (Abas) -->
-                <div class="flex items-center justify-between bg-black/40 rounded-full p-1 mb-6 border border-white/10">
-                    <button class="flex-1 bg-white text-black font-bold text-[11px] py-3 rounded-full shadow-md transition-colors flex items-center justify-center gap-1">
-                        🎵 PEDIR MÚSICA PARA A PISTA
+                <!-- Tabs (Abas) - FONTE AUMENTADA para 14px conforme solicitado -->
+                <div class="flex items-center justify-between bg-black/40 rounded-[2rem] p-1 mb-6 border border-white/10">
+                    <button class="flex-1 bg-white text-black font-bold text-[14px] leading-tight py-3 px-1 rounded-[1.8rem] shadow-md transition-colors flex items-center justify-center gap-1.5 text-center">
+                        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.369 4.369 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/></svg>
+                        PISTA
                     </button>
                     <!-- Aba Inativa aguardando desenvolvimento Karaokê -->
-                    <button class="flex-1 text-[#aaaaaa] font-semibold text-[11px] py-3 rounded-full transition-colors flex items-center justify-center gap-1">
-                        🎤 PEDIR PARA CANTAR
+                    <button class="flex-1 text-[#aaaaaa] font-semibold text-[14px] leading-tight py-3 px-1 rounded-[1.8rem] transition-colors flex items-center justify-center gap-1.5 text-center">
+                        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path></svg>
+                        KARAOKÊ
                     </button>
                 </div>
 
-                <!-- Input Livre de Pesquisa com Auto-Complete Mockado -->
+                <!-- Input Livre de Pesquisa (Evento @input para atualizar INSTANTANEAMENTE sem precisar de Enter) -->
                 <label class="block text-center text-[13px] font-medium text-white mb-3">Pesquise o nome da música ou artista</label>
                 <div class="relative w-full mb-6">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <input v-model="textoBusca" type="text" class="w-full bg-white text-black pl-12 pr-12 py-3.5 rounded-[1.25rem] text-[17px] font-bold shadow-inner" placeholder="">
+                    
+                    <!-- Substituído v-model simples pelo evento nativo @input para forçar a reatividade mobile -->
+                    <input :value="textoBusca" @input="atualizarBusca" type="text" class="w-full bg-white text-black pl-12 pr-12 py-3.5 rounded-[1.25rem] text-[17px] font-bold shadow-inner" placeholder="">
                     
                     <button v-if="textoBusca" @click="limparBusca" class="absolute inset-y-0 right-0 pr-4 flex items-center text-black">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
 
                     <!-- Lista Suspendida de Resultados da Busca -->
-                    <div v-if="textoBusca && resultadosBusca.length > 0 && !musicaPronta" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto border-2 border-[#1c1c1c]">
-                        <div v-for="item in resultadosBusca" :key="item.id" @click="selecionarDaBusca(item)" class="px-4 py-3 border-b border-gray-200 cursor-pointer hover:bg-gray-100 flex flex-col">
+                    <div v-if="textoBusca && resultadosBusca.length > 0 && !musicaPronta" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto border-2 border-[#1c1c1c] custom-scroll">
+                        <div v-for="item in resultadosBusca" :key="item.id" @click="selecionarDaBusca(item)" class="px-4 py-3 border-b border-gray-200 cursor-pointer active:bg-gray-200 flex flex-col">
                             <span class="font-bold text-black text-[15px] truncate">{{ item.titulo }}</span>
                             <span class="text-gray-500 text-[12px] font-medium truncate">{{ item.artista }}</span>
                         </div>
+                    </div>
+                    <!-- Estado Vazio -->
+                    <div v-if="textoBusca && resultadosBusca.length === 0" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl p-4 border-2 border-[#1c1c1c] text-center">
+                        <span class="font-bold text-black text-[14px]">Nenhum resultado encontrado.</span>
                     </div>
                 </div>
 
@@ -280,7 +310,7 @@
 
                     <!-- Select Música (Bloqueado Visualmente e Funcionalmente se Artista == '') -->
                     <div class="relative flex-1">
-                        <select v-model="musicaSelecionada" :disabled="!artistaSelecionado" :class="!artistaSelecionado ? 'opacity-60 cursor-not-allowed bg-gray-200 text-gray-500' : 'bg-white text-black cursor-pointer shadow-inner'" class="w-full font-bold text-[15px] py-3.5 pl-4 pr-10 rounded-[1.25rem]">
+                        <select v-model="musicaSelecionada" :disabled="!artistaSelecionado" :class="!artistaSelecionado ? 'opacity-60 bg-gray-200 text-gray-500' : 'bg-white text-black cursor-pointer shadow-inner'" class="w-full font-bold text-[15px] py-3.5 pl-4 pr-10 rounded-[1.25rem]">
                             <option value="" disabled selected>Música</option>
                             <option v-for="mus in musicasDoArtista" :key="mus.id" :value="mus">{{ mus.titulo }}</option>
                         </select>
@@ -290,15 +320,14 @@
                     </div>
                 </div>
 
-                <!-- Botão CTA Final (Inicia Bloqueado, só acende se musicaSelecionada for válida) -->
-                <button @click="confirmarPedido" :disabled="!musicaPronta" class="w-full bg-white text-[#1c1c1c] font-black text-[28px] tracking-tight py-4 rounded-full flex justify-between items-center pl-8 pr-2.5 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-transform active:scale-95 border-2 border-transparent disabled:opacity-50 disabled:cursor-not-allowed">
+                <!-- Botão CTA Final -->
+                <button @click="confirmarPedido" :disabled="!musicaPronta" class="w-full bg-white text-[#1c1c1c] font-black text-[28px] tracking-tight py-4 rounded-full flex justify-between items-center pl-8 pr-2.5 shadow-[0_15px_35px_rgba(0,0,0,0.5)] transition-transform active:scale-95 border-2 border-transparent disabled:opacity-50 disabled:active:scale-100">
                     <span class="flex-1 text-center">PEDIR MÚSICA</span>
                     <div class="bg-[#1c1c1c] rounded-full w-14 h-14 flex items-center justify-center text-white shrink-0 shadow-md">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"></path></svg>
                     </div>
                 </button>
             </div>
-
 
             <!-- Card Inferior: Histórico do Usuário -->
             <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl shrink-0 border border-white/10 mb-4">
@@ -313,7 +342,6 @@
                             <p class="text-[12px] text-[#555555] truncate mt-0.5">{{ pedido.artista }}</p>
                         </div>
 
-                        <!-- Lógica Condicional das Tags Dinâmicas -->
                         <div class="flex flex-col items-center justify-center shrink-0 w-[60px]">
                             <!-- TAG AMARELA: NA FILA -->
                             <div v-if="pedido.status === 'fila'" class="flex flex-col items-center">
@@ -362,6 +390,7 @@
                 const fotoUrl = ref('');
                 const fotoPreview = ref('');
                 const uploading = ref(false);
+                const notificacaoAtiva = ref(false);
 
                 const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
                 
@@ -372,14 +401,11 @@
                     { titulo: 'Vampirinha (Ao Vivo em Trancoso)', artista: 'Ivete Sangalo', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq4.jpg' }
                 ]);
 
-                // ==========================================
-                // LÓGICA DA TELA 4: MOTOR DE BUSCA (MOCKADO)
-                // ==========================================
+                // LÓGICA DA TELA 4
                 const textoBusca = ref('');
                 const artistaSelecionado = ref('');
                 const musicaSelecionada = ref('');
 
-                // Mock do seu HD (Substituiremos pelo WebSocket depois)
                 const catalogoMock = ref([
                     { id: 1, artista: 'Anitta', titulo: 'Na Batida (Ao Vivo)', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
                     { id: 2, artista: 'Katy Perry', titulo: 'Dark Horse (part. Juicy J)', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
@@ -415,24 +441,31 @@
                     return musicaSelecionada.value !== '' && musicaSelecionada.value != null;
                 });
 
+                // Função para atualizar a busca instantaneamente (sem Enter)
+                const atualizarBusca = (event) => {
+                    textoBusca.value = event.target.value;
+                    musicaSelecionada.value = ''; // Reseta se começar a digitar de novo
+                };
+
                 const limparBusca = () => {
                     textoBusca.value = '';
+                    musicaSelecionada.value = '';
                 };
 
                 const resetarMusica = () => {
                     musicaSelecionada.value = '';
-                    textoBusca.value = ''; // Limpa a barra de cima se escolher pelo select
+                    textoBusca.value = ''; 
                 };
 
                 const selecionarDaBusca = (musica) => {
                     artistaSelecionado.value = musica.artista;
-                    // O DOM precisa de um tick para popular o select de musicas antes de setar o value, mas o Vue reativo lida bem com isso
                     setTimeout(() => {
                         musicaSelecionada.value = musica;
-                        textoBusca.value = `${musica.titulo} - ${musica.artista}`; // Feedback visual
+                        textoBusca.value = `${musica.titulo} - ${musica.artista}`; 
                     }, 50);
                 };
 
+                // Execução do Pedido (com Toast de Sucesso)
                 const confirmarPedido = () => {
                     if (!musicaPronta.value) return;
                     
@@ -443,14 +476,17 @@
                         status: 'fila'
                     });
                     
-                    alert('Pedido enviado com sucesso! 🚀');
+                    // Mostra a notificação em tela (Toast)
+                    notificacaoAtiva.value = true;
+                    setTimeout(() => {
+                        notificacaoAtiva.value = false;
+                    }, 3000);
                     
                     // Reset do form
                     artistaSelecionado.value = '';
                     musicaSelecionada.value = '';
                     textoBusca.value = '';
                 };
-                // ==========================================
 
                 onMounted(() => {
                     const savedName = localStorage.getItem('vdj_nome');
@@ -498,7 +534,8 @@
                     telaAtual, temaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
                     tocandoAgora, proximasMusicas, abrirBusca,
                     textoBusca, artistaSelecionado, musicaSelecionada, artistasUnicos, musicasDoArtista,
-                    resultadosBusca, limparBusca, resetarMusica, selecionarDaBusca, confirmarPedido, musicaPronta, meusPedidosLocal
+                    resultadosBusca, atualizarBusca, limparBusca, resetarMusica, selecionarDaBusca, confirmarPedido, musicaPronta, meusPedidosLocal,
+                    notificacaoAtiva
                 }
             }
         }).mount('#app');
