@@ -96,7 +96,6 @@
         <!-- ================= NOTIFICAÇÃO (TOAST) DINÂMICA ================= -->
         <transition name="toast">
             <div v-if="toast.ativa" class="fixed bottom-10 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none">
-                <!-- A cor muda baseado no tipo: sucesso = verde, aviso = amarelo -->
                 <div :class="toast.tipo === 'sucesso' ? 'bg-[#22c55e]' : 'bg-[#fbc02d] text-black'" class="font-bold text-[14px] py-4 px-6 rounded-full shadow-2xl flex items-center gap-3">
                     <svg v-if="toast.tipo === 'sucesso'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                     <svg v-else class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -282,7 +281,8 @@
                             <span class="text-gray-500 text-[12px] font-medium truncate">{{ item.artista }}</span>
                         </div>
                     </div>
-                    <div v-if="textoBusca && resultadosBusca.length === 0" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl p-4 border-2 border-[#1c1c1c] text-center">
+                    <!-- Corrigido o bug da mensagem persistente adicionando && !musicaPronta -->
+                    <div v-if="textoBusca && resultadosBusca.length === 0 && !musicaPronta" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-2xl p-4 border-2 border-[#1c1c1c] text-center">
                         <span class="font-bold text-black text-[14px]">Nenhum resultado encontrado.</span>
                     </div>
                 </div>
@@ -381,12 +381,10 @@
                 const fotoPreview = ref('');
                 const uploading = ref(false);
                 
-                // Controle do Toast (Notificação Dinâmica)
                 const toast = ref({ ativa: false, tipo: 'sucesso', mensagem: '' });
 
                 const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
                 
-                // Simulação da fila geral da pista
                 const proximasMusicas = ref([
                     { titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
                     { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' }
@@ -455,7 +453,6 @@
                     }, 50);
                 };
 
-                // Função para invocar o Toast
                 const mostrarToast = (tipo, mensagem) => {
                     toast.value = { ativa: true, tipo, mensagem };
                     setTimeout(() => {
@@ -463,13 +460,11 @@
                     }, 3000);
                 };
 
-                // Execução do Pedido (com validação de duplicidade)
                 const confirmarPedido = () => {
                     if (!musicaPronta.value) return;
                     
                     const tituloEscolhido = musicaSelecionada.value.titulo;
 
-                    // Verifica se a música já está na fila global (proximasMusicas) ou local (meusPedidosLocal)
                     const duplicada = proximasMusicas.value.some(m => m.titulo === tituloEscolhido) || 
                                       meusPedidosLocal.value.some(p => p.titulo === tituloEscolhido && p.status === 'fila');
 
@@ -483,7 +478,6 @@
                             status: 'fila'
                         });
                         
-                        // Push simulado pra fila global (só pra visualização no protótipo)
                         proximasMusicas.value.push({
                             titulo: musicaSelecionada.value.titulo,
                             artista: musicaSelecionada.value.artista,
@@ -493,7 +487,6 @@
                         mostrarToast('sucesso', 'Pedido enviado com sucesso! 🚀');
                     }
                     
-                    // Reset limpo do form
                     artistaSelecionado.value = '';
                     musicaSelecionada.value = '';
                     textoBusca.value = '';
