@@ -31,7 +31,6 @@
             z-index: -10;
         }
 
-        /* Transição Suave na Troca de Fundos */
         .fade-bg-enter-active, .fade-bg-leave-active {
             transition: opacity 0.6s ease-in-out;
         }
@@ -116,14 +115,12 @@
 <body>
     <div id="app" class="max-w-md mx-auto relative h-[100dvh] flex flex-col font-['Poppins'] overflow-hidden">
         
-        <!-- ================= FUNDOS COM TRANSIÇÃO ================= -->
         <transition name="fade-bg">
             <img v-if="temaAtual === 'karaoke'" src="fundo-thevoice-app.png" class="fundo-estatico object-right" alt="Fundo Karaoke">
             <img v-else src="fundo-app.png" class="fundo-estatico object-center" alt="Fundo Pista">
         </transition>
         <div class="fixed inset-0 bg-black/20 -z-10" aria-hidden="true"></div>
 
-        <!-- ================= NOTIFICAÇÃO (TOAST) ================= -->
         <transition name="toast">
             <div v-if="toast.ativa" class="fixed bottom-10 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none" role="alert">
                 <div :class="toast.tipo === 'sucesso' ? 'bg-[#22c55e]' : 'bg-[#fbc02d] text-black'" class="font-bold text-[14px] py-4 px-6 rounded-full shadow-2xl flex items-center gap-3">
@@ -134,13 +131,11 @@
             </div>
         </transition>
 
-        <!-- ================= CABEÇALHO GLOBAL VIRTUAL DJ (FIXO E PADRÃO EM TODAS AS TELAS) ================= -->
         <header class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
             <img src="logo-vdj.png" alt="Logo VirtualDJ" class="h-full object-contain drop-shadow-2xl">
             <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="irParaCadastro" alt="Avatar do Usuário" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-[2px] border-[#262626]/50">
         </header>
 
-        <!-- ================= TELA 1: CADASTRO ================= -->
         <main v-if="telaAtual === 'cadastro'" class="flex flex-col flex-1 w-full px-5 pb-8 overflow-y-auto custom-scroll items-center pt-2">
             <section class="bg-[#262626] rounded-[36px] px-6 pt-8 pb-8 w-full shadow-2xl flex flex-col items-center text-center mt-2 border border-white/5">
                 <label for="nome-usuario" class="block text-sm font-extrabold text-white mb-4 tracking-widest uppercase">INSIRA O SEU NOME</label>
@@ -177,7 +172,6 @@
             </section>
         </main>
 
-        <!-- ================= TELA 2: PRINCIPAL (PISTA) ================= -->
         <main v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full pb-6 overflow-y-auto custom-scroll items-center relative">
             <button @click="irParaBusca" class="w-[90%] max-w-[340px] bg-[#141517] text-white font-black text-[32px] tracking-tight uppercase py-4 pl-8 pr-3 my-3 rounded-full flex justify-between items-center shadow-xl shadow-black/60 transition-transform active:scale-95 btn-animado btn-sheen shrink-0">
                 <span class="flex-1 text-center relative z-10">PEDIR MÚSICA</span>
@@ -244,7 +238,6 @@
             </div>
         </main>
 
-        <!-- ================= TELA 3: FILA EXPANDIDA ================= -->
         <main v-if="telaAtual === 'proximas'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
             <section class="bg-[#2a2a2a] rounded-[2.5rem] pt-6 pb-2 px-2 w-full shadow-2xl flex-1 flex flex-col border border-white/10 min-h-0 mt-2">
                 <h3 class="text-center font-bold text-[22px] mb-4 text-white tracking-wide shrink-0">A seguir</h3>
@@ -283,7 +276,6 @@
             </div>
         </main>
 
-        <!-- ================= TELA 4: PEDIDO MUSICAL (BUSCA - PISTA) ================= -->
         <main v-if="telaAtual === 'busca'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
             <section class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl mb-4 border border-white/10 shrink-0 relative mt-2">
                 <button @click="irParaPrincipal" class="absolute right-6 top-6 text-[#888888] hover:text-white transition-colors" aria-label="Fechar">
@@ -365,7 +357,6 @@
             </div>
         </main>
 
-        <!-- ================= TELA 5: FILA DE ESPERA E JÁ TOCADOS (PISTA) ================= -->
         <main v-if="telaAtual === 'fila_espera'" class="flex flex-col flex-1 w-full px-4 relative min-h-0 pb-6 overflow-y-auto custom-scroll">
             <section class="bg-[#242627] rounded-[36px] pt-4 pb-4 px-3 w-full shadow-2xl flex-1 flex flex-col min-h-0 border border-white/10 mt-2 shrink-0">
                 <div class="bg-[#18191B] rounded-full py-2.5 px-4 mb-3 shrink-0 shadow-lg mx-2 flex items-center justify-center">
@@ -465,10 +456,7 @@
             </div>
         </main>
 
-        <!-- ================= TELA 6: PEDIDO KARAOKÊ (THE VOICE FAMÍLIA) ================= -->
         <main v-if="telaAtual === 'busca_karaoke'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
-            
-            <!-- Branding The Voice Família (Cabeçalho Secundário do Karaokê) -->
             <div class="flex items-center justify-between w-full px-1 pt-1 pb-4 relative z-10 shrink-0">
                 <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" alt="Logo The Voice Família" class="w-[45%] max-w-[150px] object-contain drop-shadow-2xl transform -rotate-2">
                 <div class="flex flex-col items-end justify-center flex-1 pl-2">
@@ -546,10 +534,7 @@
             </nav>
         </main>
 
-        <!-- ================= TELA 7: FILA DE KARAOKÊ ================= -->
         <main v-if="telaAtual === 'fila_karaoke'" class="flex flex-col flex-1 w-full px-4 pb-6 overflow-y-auto custom-scroll relative">
-            
-            <!-- Branding The Voice Família (Cabeçalho Secundário do Karaokê) -->
             <div class="flex items-center justify-between w-full px-1 pt-1 pb-4 relative z-10 shrink-0">
                 <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" alt="Logo The Voice Família" class="w-[45%] max-w-[150px] object-contain drop-shadow-2xl transform -rotate-2">
                 <div class="flex flex-col items-end justify-center flex-1 pl-2">
@@ -628,7 +613,6 @@
         const { createApp, ref, computed, onMounted } = Vue;
         
         const IMGBB_API_KEY = '5b0d512fa2132911bcdb68f224a8943b'; 
-        // Conexão com o seu servidor na nuvem
         const socket = io('https://vdj-requests-cloud.onrender.com');
 
         createApp({
@@ -641,7 +625,6 @@
                 const uploading = ref(false);
                 const toast = ref({ ativa: false, tipo: 'sucesso', mensagem: '' });
                 
-                // Dados em tempo real
                 const tocandoAgora = ref({ titulo: 'Aguardando DJ...', artista: 'VirtualDJ', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
                 const proximasMusicas = ref([]);
                 const catalogo = ref([]);
@@ -649,12 +632,10 @@
                 const pedidosHistorico = ref([]);
                 const pedidosKaraoke = ref([]);
 
-                // LISTENERS DO SOCKET.IO
                 socket.on('estado_atualizado', (estado) => {
                     pedidosFila.value = estado.filaPista || [];
                     pedidosHistorico.value = estado.historicoPista || [];
                     
-                    // Atualiza o "Tocando Agora" e "A Seguir" com os dados reais do VDJ
                     if (estado.deckPista) {
                         tocandoAgora.value = estado.deckPista.tocandoAgora || tocandoAgora.value;
                         proximasMusicas.value = estado.deckPista.proximas || [];
@@ -682,18 +663,15 @@
                     mostrarToast('erro', erro.msg);
                 });
 
-                // LÓGICA DA PISTA
                 const textoBusca = ref('');
                 const artistaSelecionado = ref('');
                 const musicaSelecionada = ref('');
                 const apenasMeusPedidos = ref(false);
 
-                // LÓGICA DO KARAOKÊ
                 const karaokeArtista = ref('');
                 const karaokeMusica = ref('');
                 const karaokeModo = ref('solo');
 
-                // COMPUTEDS DA PISTA
                 const artistasUnicos = computed(() => [...new Set(catalogo.value.map(m => m.artista))].sort());
                 const musicasDoArtista = computed(() => catalogo.value.filter(m => m.artista === artistaSelecionado.value).sort((a, b) => a.titulo.localeCompare(b.titulo)));
                 const resultadosBusca = computed(() => {
