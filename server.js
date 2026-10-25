@@ -65,7 +65,11 @@ io.on('connection', (socket) => {
         estado.filaPista = estado.filaPista.filter(p => !(p.titulo === dados.titulo && p.artista === dados.artista));
         estado.historicoPista.push({ ...dados, timestamp_tocado: Date.now() });
 
-        // O Python já envia os dados completos com a capa resolvida!
+        // CORREÇÃO DO BUG DA POSIÇÃO 2: Remove a música que acabou de tocar da lista de "Próximas"
+        estado.deckPista.proximas = estado.deckPista.proximas.filter(p => 
+            p.titulo !== dados.titulo && p.artista !== dados.artista
+        );
+
         estado.deckPista.tocandoAgora = {
             titulo: dados.titulo,
             artista: dados.artista,
