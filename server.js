@@ -1,65 +1,95 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const axios = require('axios');
-const cors = require('cors');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-
-// Linha adicionada para o servidor exibir a sua interface visual
-app.use(express.static('public'));
-
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: "*" }
-});
+const io = new Server(server, { cors: { origin: "*" } });
 
-// Bancos de dados em memória
-let filaPista = [];
-let filaKaraoke = [];
+// REGRAS DE NEGÓCIO (LIMITES DE TEMPO)
+const RATE_LIMIT_MS = 5 * 60 * 1000; // 5 minutos
+const COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 horas
 
-// API: Busca de Capas no iTunes (Fallback quando o HD falhar)
-app.get('/api/cover', async (req, res) => {
-    const { artist, track } = req.query;
-    if (!artist || !track) return res.status(400).json({ erro: 'Parâmetros artist e track são obrigatórios' });
+// BANCO DE DADOS EM MEMÓRIA (Separação estrita de módulos)
+let estado = {
+    catalogo: [], 
+    filaPista: [],
+    filaKaraoke: [],
+    historicoPista: [], 
+    ultimoPedidoPorUsuario: {}, 
+    curtidas: {} 
+};
 
-    try {
-        const termo = encodeURIComponent(`${artist} ${track}`);
-        const resposta = await axios.get(`https://itunes.apple.com/search?term=${termo}&entity=song&limit=1`);
-
-        if (resposta.data.results && resposta.data.results.length > 0) {
-            let capaAltaRes = resposta.data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
-            return res.json({ url: capaAltaRes });
-        }
-        res.status(404).json({ erro: 'Capa não encontrada no iTunes' });
-    } catch (erro) {
-        res.status(500).json({ erro: 'Falha na comunicação com a Apple Music' });
-    }
-});
-
-// Comunicação em Tempo Real
 io.on('connection', (socket) => {
-    console.log(`Cliente conectado: ${socket.id}`);
+    console.log(`Nova conexão no socket: ${socket.id}`);
 
-    socket.on('pedir_musica', (dados) => {
-        io.emit('novo_pedido', { caminho: dados.caminho });
-        filaPista.push(dados);
-        io.emit('atualizacao_fila', filaPista);
+    // Sincronização inicial para quem acabou de abrir o app
+    socket.emit('estado_atualizado', {
+        filaPista: estado.filaPista,
+        filaKaraoke: estado.filaKaraoke,
+        historicoPista: estado.historicoPista.slice(-10)
+    });
+    socket.emit('catalogo_atualizado', estado.catalogo);
+
+    // Alimentação do catálogo vinda do script Python local
+    socket.on('sync_catalogo', (dadosPython) => {
+        estado.catalogo = dadosPython;
+        io.emit('catalogo_atualizado', estado.catalogo);
     });
 
-    socket.on('pedir_karaoke', (dados) => {
-        filaKaraoke.push(dados);
-        io.emit('atualizacao_karaoke', filaKaraoke);
+    // Fluxo de entrada: Módulo Pista
+    socket.on('novo_pedido_pista', (pedido) => {
+        const agora = Date.now();
+        const idUsuario = pedido.pedinte; 
+        
+        const ultimoPedidoUser = estado.ultimoPedidoPorUsuario[idUsuario];
+        if (ultimoPedidoUser && (agora - ultimoPedidoUser) < RATE_LIMIT_MS) {
+            return socket.emit('erro_pedido', { msg: 'Aguarde 5 minutos entre pedidos.' });
+        }
+
+        const naFila = estado.filaPista.some(p => p.titulo === pedido.titulo && p.artista === pedido.artista);
+        if (naFila) {
+            return socket.emit('erro_pedido', { msg: 'Essa música já está na fila!' });
+        }
+
+        const tocouRecentemente = estado.historicoPista.some(p => {
+            return p.titulo === pedido.titulo && 
+                   p.artista === pedido.artista && 
+                   (agora - p.timestamp_tocado) < COOLDOWN_MS;
+        });
+        
+        if (tocouRecentemente) {
+            return socket.emit('erro_pedido', { msg: 'Essa é sucesso e já tocou! Tente de novo mais tarde.' });
+        }
+
+        estado.ultimoPedidoPorUsuario[idUsuario] = agora;
+        estado.filaPista.push(pedido);
+        io.emit('fila_pista_atualizada', estado.filaPista);
     });
 
-    socket.on('disconnect', () => {
-        console.log(`Cliente desconectado: ${socket.id}`);
+    // Fluxo de entrada: Módulo Karaokê (Rotas e memórias isoladas)
+    socket.on('novo_pedido_karaoke', (pedido) => {
+        estado.filaKaraoke.push(pedido);
+        io.emit('fila_karaoke_atualizada', estado.filaKaraoke);
+    });
+
+    // Baixa de música executada (Trigger disparado pelo Python)
+    socket.on('musica_tocada', (dados) => {
+        estado.filaPista = estado.filaPista.filter(p => !(p.titulo === dados.titulo && p.artista === dados.artista));
+        
+        estado.historicoPista.push({
+            ...dados,
+            timestamp_tocado: Date.now()
+        });
+
+        io.emit('estado_atualizado', {
+            filaPista: estado.filaPista,
+            historicoPista: estado.historicoPista.slice(-10)
+        });
     });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Servidor Node.js rodando na porta ${PORT}`);
+    console.log(`WebSockets rodando na porta ${PORT}`);
 });
