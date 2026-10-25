@@ -6,6 +6,11 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
+// Rota básica para evitar o erro de página em branco no navegador
+app.get('/', (req, res) => {
+    res.send('🚀 Servidor do VirtualDJ Requests 2.0 rodando e operacional!');
+});
+
 // REGRAS DE NEGÓCIO (LIMITES DE TEMPO)
 const RATE_LIMIT_MS = 5 * 60 * 1000; // 5 minutos
 const COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 horas
