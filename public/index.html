@@ -211,7 +211,7 @@
                 
                 <div class="w-full">
                     <article v-for="(musica, index) in proximasMusicas.slice(0, 2)" :key="index" class="flex items-center justify-between w-full h-16 bg-[#CFCFCF] rounded-2xl overflow-hidden mb-2.5 shadow-md">
-                        <img :src="musica.capa" alt="Capa da próxima música" class="w-16 h-16 shrink-0 object-cover rounded-l-2xl">
+                        <img :src="musica.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg'" alt="Capa da próxima música" class="w-16 h-16 shrink-0 object-cover rounded-l-2xl">
                         
                         <div class="flex flex-col justify-center flex-1 px-3 min-w-0 relative overflow-hidden">
                             <div :class="musica.titulo.length > 15 ? 'marquee-container' : ''">
@@ -228,6 +228,9 @@
                             <p class="text-[9px] font-medium text-gray-700 leading-none whitespace-nowrap">no deck do DJ</p>
                         </div>
                     </article>
+                    <div v-if="proximasMusicas.length === 0" class="text-center text-gray-400 text-sm font-semibold py-2">
+                        Nenhuma música no automix.
+                    </div>
                 </div>
             </section>
 
@@ -248,7 +251,7 @@
                 <div class="flex-1 overflow-y-auto custom-scroll px-4">
                     <div class="space-y-4 pt-2 pb-4">
                         <article v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-[3.5rem] pr-4 flex items-center gap-2 shadow-md ml-3">
-                            <img :src="musica.capa" alt="Capa da música" class="absolute -left-3 w-[72px] h-[72px] rounded-xl object-cover shadow-xl bg-zinc-300 shrink-0 border-2 border-white">
+                            <img :src="musica.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg'" alt="Capa da música" class="absolute -left-3 w-[72px] h-[72px] rounded-xl object-cover shadow-xl bg-zinc-300 shrink-0 border-2 border-white">
                             <div class="flex-1 min-w-0 pl-2 pr-2 overflow-hidden relative">
                                 <div :class="musica.titulo.length > 16 ? 'marquee-container' : ''">
                                     <h4 class="font-extrabold text-[16px] leading-tight text-black" :class="musica.titulo.length > 16 ? 'marquee-text' : 'truncate'">{{ musica.titulo }}</h4>
@@ -263,6 +266,9 @@
                                 <p class="text-[9px] font-medium text-gray-500 leading-none lowercase tracking-wide">no deck do DJ</p>
                             </div>
                         </article>
+                        <div v-if="proximasMusicas.length === 0" class="text-center text-gray-400 text-sm font-semibold py-4">
+                            Nenhuma música no automix.
+                        </div>
                     </div>
                 </div>
             </section>
@@ -292,7 +298,6 @@
                         <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.369 4.369 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/></svg>
                         PISTA
                     </button>
-                    <!-- BOTÃO PARA ACIONAR O THE VOICE FAMÍLIA -->
                     <button @click="irParaKaraoke" class="flex-1 text-[#aaaaaa] font-semibold text-[14px] leading-tight py-3 px-1 rounded-[1.8rem] transition-colors flex items-center justify-center gap-1.5 text-center hover:text-white">
                         <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path></svg>
                         KARAOKÊ
@@ -397,7 +402,7 @@
                                 </div>
 
                                 <div class="flex items-center gap-1.5 shrink-0 h-full">
-                                    <img :src="pedido.capa" alt="Capa" class="h-full w-[64px] object-cover rounded-none border border-black/10 shrink-0">
+                                    <img :src="pedido.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg'" alt="Capa" class="h-full w-[64px] object-cover rounded-none border border-black/10 shrink-0">
                                     <div class="bg-gradient-to-b from-[#FBBF24] to-[#F59E0B] h-[52px] w-[48px] rounded-xl flex flex-col items-center justify-center shadow-sm shrink-0">
                                         <svg class="w-5 h-5 text-white mb-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         <span class="text-[#D97706] font-black text-[8px] uppercase tracking-tighter">NA FILA</span>
@@ -435,7 +440,7 @@
                                 </div>
 
                                 <div class="flex items-center gap-1.5 shrink-0 h-full">
-                                    <img :src="pedido.capa" alt="Capa" class="h-full w-[64px] object-cover rounded-none border border-black/20 shrink-0 grayscale opacity-80">
+                                    <img :src="pedido.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg'" alt="Capa" class="h-full w-[64px] object-cover rounded-none border border-black/20 shrink-0 grayscale opacity-80">
                                     <div class="bg-[#8C8F94] h-[52px] w-[48px] rounded-xl flex flex-col items-center justify-center shadow-sm shrink-0 border border-gray-400/30">
                                         <svg class="w-5 h-5 text-white/70 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         <span class="text-[#374151] font-black text-[8px] uppercase tracking-tighter">JÁ TOCOU</span>
@@ -637,24 +642,28 @@
                 const toast = ref({ ativa: false, tipo: 'sucesso', mensagem: '' });
                 
                 // Dados em tempo real
-                const tocandoAgora = ref({ titulo: 'Aguardando...', artista: 'DJ', capa: 'https://i.ibb.co/6H9nkWm/default-avatar.png' });
+                const tocandoAgora = ref({ titulo: 'Aguardando DJ...', artista: 'VirtualDJ', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
                 const proximasMusicas = ref([]);
                 const catalogo = ref([]);
-                const pedidosGerais = ref([]);
+                const pedidosFila = ref([]);
+                const pedidosHistorico = ref([]);
                 const pedidosKaraoke = ref([]);
 
-                // Listeners do Socket.io
+                // LISTENERS DO SOCKET.IO
                 socket.on('estado_atualizado', (estado) => {
-                    pedidosGerais.value = [...estado.filaPista, ...estado.historicoPista.map(p => ({...p, status: 'tocado'}))].reverse();
+                    pedidosFila.value = estado.filaPista || [];
+                    pedidosHistorico.value = estado.historicoPista || [];
                     
-                    // Atualiza o painel do DJ (Tocando Agora e Próximas)
-                    if (estado.filaPista.length > 0) {
-                        tocandoAgora.value = estado.filaPista[0];
-                        proximasMusicas.value = estado.filaPista.slice(1);
-                    } else {
-                        tocandoAgora.value = { titulo: 'Seleção do DJ', artista: 'Ao Vivo', capa: 'https://i.ibb.co/6H9nkWm/default-avatar.png' };
-                        proximasMusicas.value = [];
+                    // Atualiza o "Tocando Agora" e "A Seguir" com os dados reais do VDJ
+                    if (estado.deckPista) {
+                        tocandoAgora.value = estado.deckPista.tocandoAgora || tocandoAgora.value;
+                        proximasMusicas.value = estado.deckPista.proximas || [];
                     }
+                });
+
+                socket.on('deck_atualizado', (deck) => {
+                    tocandoAgora.value = deck.tocandoAgora || tocandoAgora.value;
+                    proximasMusicas.value = deck.proximas || [];
                 });
 
                 socket.on('catalogo_atualizado', (dados) => {
@@ -662,11 +671,7 @@
                 });
 
                 socket.on('fila_pista_atualizada', (fila) => {
-                    pedidosGerais.value = [...fila, ...pedidosGerais.value.filter(p => p.status === 'tocado')].reverse();
-                    if (fila.length > 0) {
-                        tocandoAgora.value = fila[0];
-                        proximasMusicas.value = fila.slice(1);
-                    }
+                    pedidosFila.value = fila;
                 });
 
                 socket.on('fila_karaoke_atualizada', (fila) => {
@@ -699,13 +704,13 @@
                 const musicaPronta = computed(() => musicaSelecionada.value !== '' && musicaSelecionada.value != null);
                 
                 const filaEsperaExibida = computed(() => {
-                    let fila = pedidosGerais.value.filter(p => p.status !== 'tocado');
+                    let fila = pedidosFila.value || [];
                     if (apenasMeusPedidos.value && nome.value) fila = fila.filter(p => p.pedinte.toLowerCase() === nome.value.toLowerCase());
                     return fila;
                 });
 
                 const historicoTocadosExibido = computed(() => {
-                    let hist = pedidosGerais.value.filter(p => p.status === 'tocado');
+                    let hist = pedidosHistorico.value || [];
                     if (apenasMeusPedidos.value && nome.value) hist = hist.filter(p => p.pedinte.toLowerCase() === nome.value.toLowerCase());
                     return hist;
                 });
@@ -816,7 +821,7 @@
                     telaAtual, temaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
                     tocandoAgora, proximasMusicas, textoBusca, artistaSelecionado, musicaSelecionada, artistasUnicos, musicasDoArtista,
                     resultadosBusca, atualizarBusca, limparBusca, resetarMusica, selecionarDaBusca, confirmarPedido, musicaPronta,
-                    toast, pedidosGerais, filaEsperaExibida, historicoTocadosExibido, apenasMeusPedidos,
+                    toast, filaEsperaExibida, historicoTocadosExibido, apenasMeusPedidos,
                     karaokeArtista, karaokeMusica, karaokeModo, pedidosKaraoke, karaokeValido, confirmarKaraoke, 
                     irParaCadastro, irParaPrincipal, irParaBusca, irParaFila, irParaProximas, irParaKaraoke, irParaFilaKaraoke
                 }
