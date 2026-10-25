@@ -17,14 +17,14 @@ let estado = {
     filaPista: [],
     filaKaraoke: [],
     historicoPista: [], 
-    deckPista: { tocandoAgora: null, proximas: [] }, // Dados reais do VirtualDJ
+    deckPista: { tocandoAgora: null, proximas: [] }, 
     curtidas: {} 
 };
 
 io.on('connection', (socket) => {
     console.log(`Nova conexão: ${socket.id}`);
 
-    // Sincronização inicial (envia tudo que tem)
+    // Sincronização inicial
     socket.emit('estado_atualizado', {
         filaPista: estado.filaPista,
         filaKaraoke: estado.filaKaraoke,
@@ -33,15 +33,16 @@ io.on('connection', (socket) => {
     });
     socket.emit('catalogo_atualizado', estado.catalogo);
 
-    // Recebe o catálogo do Python
+    // Catálogo vindo do Python
     socket.on('sync_catalogo', (dadosPython) => {
         estado.catalogo = dadosPython;
         io.emit('catalogo_atualizado', estado.catalogo);
     });
 
-    // Recebe os dados do Deck (Tocando Agora e Próximas) direto do Python via OSC
+    // Atualiza "A Seguir" (vindo da leitura do M3U do VDJ pelo Python)
     socket.on('atualizar_deck_vdj', (deck) => {
-        estado.deckPista = deck;
+        if (deck.proximas) estado.deckPista.proximas = deck.proximas;
+        if (deck.tocandoAgora) estado.deckPista.tocandoAgora = deck.tocandoAgora;
         io.emit('deck_atualizado', estado.deckPista);
     });
 
@@ -49,7 +50,7 @@ io.on('connection', (socket) => {
     socket.on('novo_pedido_pista', (pedido) => {
         const agora = Date.now();
         
-        // 1. Trava de duplicidade na fila
+        // 1. Trava de duplicidade
         const naFila = estado.filaPista.some(p => p.titulo === pedido.titulo && p.artista === pedido.artista);
         if (naFila) return socket.emit('erro_pedido', { msg: 'Essa música já está na fila!' });
 
@@ -60,7 +61,6 @@ io.on('connection', (socket) => {
         
         if (tocouRecentemente) return socket.emit('erro_pedido', { msg: 'Essa é sucesso e já tocou! Tente de novo mais tarde.' });
 
-        // Se passou, adiciona à fila
         estado.filaPista.push(pedido);
         io.emit('fila_pista_atualizada', estado.filaPista);
     });
@@ -71,13 +71,20 @@ io.on('connection', (socket) => {
         io.emit('fila_karaoke_atualizada', estado.filaKaraoke);
     });
 
-    // QUANDO O PYTHON AVISA QUE UMA MÚSICA DA FILA COMEÇOU A TOCAR
+    // QUANDO O PYTHON LÊ O LOG (Tocando Agora)
     socket.on('musica_tocada', (dados) => {
-        // Remove da fila
+        // Remove da fila se for um pedido
         estado.filaPista = estado.filaPista.filter(p => !(p.titulo === dados.titulo && p.artista === dados.artista));
         
         // Adiciona ao histórico
         estado.historicoPista.push({ ...dados, timestamp_tocado: Date.now() });
+
+        // Atualiza o Tocando Agora
+        estado.deckPista.tocandoAgora = {
+            titulo: dados.titulo,
+            artista: dados.artista,
+            capa: "https://i.ibb.co/xLqB8zP/placeholder-wide.jpg"
+        };
 
         io.emit('estado_atualizado', {
             filaPista: estado.filaPista,
