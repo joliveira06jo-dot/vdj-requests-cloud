@@ -4,7 +4,14 @@ const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+
+// AUMENTADO: 10MB em vez de 1MB padrão
+const io = new Server(server, { 
+    cors: { origin: "*" },
+    maxHttpBufferSize: 10 * 1024 * 1024,
+    pingInterval: 25000,
+    pingTimeout: 60000
+});
 
 app.use(express.static('public'));
 
@@ -57,12 +64,15 @@ io.on('connection', (socket) => {
         console.log(`[BRIDGE] Online: ${socket.id}`);
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (reason) => {
+        // NOVO: log do motivo
         if (socket.id === bridgeSocketId) {
+            console.log(`[BRIDGE] Desconectado. Motivo: ${reason}`);
             bridgeSocketId = null;
             estado.bridgeOnline = false;
             io.emit('bridge_status', { online: false });
-            console.log(`[BRIDGE] Offline.`);
+        } else if (reason === 'transport error' || reason === 'transport close') {
+            console.log(`[SOCKET] Conexão perdida: ${socket.id} (${reason})`);
         }
     });
 
@@ -86,6 +96,7 @@ io.on('connection', (socket) => {
     socket.on('sync_catalogo', (dados) => {
         estado.catalogo = dados;
         io.emit('catalogo_atualizado', dados);
+        console.log(`[CATALOGO] Recebido: ${dados.length} itens (${Math.round(JSON.stringify(dados).length / 1024)}KB)`);
     });
 
     socket.on('atualizar_deck_vdj', (deck) => {
@@ -94,7 +105,6 @@ io.on('connection', (socket) => {
         io.emit('deck_atualizado', estado.deckPista);
     });
 
-    // ===== CAMINHO RESOLVIDO (Bridge informa o path real) =====
     socket.on('caminho_resolvido', (dados) => {
         const pedido = estado.filaPista.find(p =>
             p.titulo === dados.titulo &&
@@ -165,7 +175,6 @@ io.on('connection', (socket) => {
 
     socket.on('injecao_resultado', (r) => { io.emit('injecao_resultado', r); });
 
-    // === AÇÕES ADMIN ===
     socket.on('admin_toggle_pausa', () => {
         estado.pausado = !estado.pausado;
         io.emit('pausa_status', { pausado: estado.pausado });
