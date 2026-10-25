@@ -17,7 +17,7 @@ let estado = {
     filaPista: [],
     filaKaraoke: [],
     historicoPista: [], 
-    deckPista: { tocandoAgora: null, proximas: [] }, // Novo: Dados reais do VirtualDJ
+    deckPista: { tocandoAgora: null, proximas: [] }, // Dados reais do VirtualDJ
     curtidas: {} 
 };
 
@@ -39,7 +39,7 @@ io.on('connection', (socket) => {
         io.emit('catalogo_atualizado', estado.catalogo);
     });
 
-    // Recebe os dados do Deck (Tocando Agora e Próximas) direto do Python
+    // Recebe os dados do Deck (Tocando Agora e Próximas) direto do Python via OSC
     socket.on('atualizar_deck_vdj', (deck) => {
         estado.deckPista = deck;
         io.emit('deck_atualizado', estado.deckPista);
