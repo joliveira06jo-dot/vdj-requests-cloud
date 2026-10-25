@@ -632,6 +632,13 @@
                 socket.on('fila_pista_atualizada', (fila) => { pedidosFila.value = fila; });
                 socket.on('fila_karaoke_atualizada', (fila) => { pedidosKaraoke.value = fila.reverse(); });
                 socket.on('erro_pedido', (erro) => { mostrarToast('erro', erro.msg); });
+                // NOVO: Verificador periódico - a cada 8s pergunta se o bridge está online
+// Garante sincronização mesmo se o evento de disconnect for perdido
+setInterval(() => {
+    if (socket.connected) {
+        socket.emit('verificar_bridge');
+    }
+}, 8000);
 
                 const textoBusca = ref('');
                 const artistaSelecionado = ref('');
