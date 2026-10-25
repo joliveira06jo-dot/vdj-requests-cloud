@@ -108,7 +108,7 @@
 <body>
     <div id="app" class="max-w-md mx-auto relative h-[100dvh] flex flex-col font-['Poppins'] overflow-hidden">
         
-        <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico" alt="Fundo">
+        <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico transition-all duration-500" :class="temaAtual === 'karaoke' ? 'object-right' : 'object-center'" alt="Fundo">
         <div class="fixed inset-0 bg-black/20 -z-10"></div>
 
         <!-- ================= NOTIFICAÇÃO (TOAST) ================= -->
@@ -123,24 +123,9 @@
         </transition>
 
         <!-- ================= CABEÇALHO GLOBAL FIXO ================= -->
-        <!-- Ocultado nas telas do Karaokê para dar espaço ao Branding 3D -->
-        <div v-if="temaAtual !== 'karaoke'" class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
+        <div class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
             <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
-            <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg">
-        </div>
-
-        <div v-if="temaAtual === 'karaoke'" class="relative flex justify-between items-center mt-4 mb-2 w-full px-5 shrink-0 z-40">
-            <div class="flex flex-col items-center justify-center">
-                <div class="flex items-center">
-                    <span class="font-black uppercase text-white tracking-tight text-[26px] leading-none drop-shadow-md">VIRTUAL</span>
-                    <span class="font-black uppercase text-white tracking-tight text-[26px] leading-none border-2 border-white rounded-md px-1 ml-0.5 shadow-sm">DJ</span>
-                </div>
-                <div class="bg-[#2A0826]/90 border border-[#C026D3] rounded-full flex items-center gap-1.5 px-3 py-1 mt-1 shadow-md">
-                    <span class="text-yellow-400 text-xs">⚡</span>
-                    <span class="text-[11px] font-semibold text-white tracking-wide">Automação em Tempo Real</span>
-                </div>
-            </div>
-            <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="voltarAoInicio" class="w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-2 border-white/20">
+            <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-[2px] border-[#262626]/50">
         </div>
 
         <!-- ================= TELA 1: CADASTRO ================= -->
@@ -472,31 +457,33 @@
         <!-- ================= TELA 6: PEDIDO KARAOKÊ (THE VOICE FAMÍLIA) ================= -->
         <div v-if="telaAtual === 'busca_karaoke'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
             
-            <div class="flex items-center justify-between w-full px-2 pt-2 pb-4 relative z-10 shrink-0">
-                <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" class="w-[45%] max-w-[140px] object-contain drop-shadow-2xl transform -rotate-2">
+            <!-- Branding The Voice Família (Fixo nas Telas de Karaokê) -->
+            <div class="flex items-center justify-between w-full px-1 pt-1 pb-4 relative z-10 shrink-0">
+                <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" class="w-[45%] max-w-[150px] object-contain drop-shadow-2xl transform -rotate-2">
                 <div class="flex flex-col items-end justify-center flex-1 pl-2">
-                    <span class="font-black text-white text-[28px] uppercase tracking-wider text-right leading-none mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">MÓDULO</span>
-                    <div class="rounded-full px-4 py-1.5 bg-[#831843] shadow-lg border border-white/10">
-                        <span class="font-black text-white text-[17px] uppercase tracking-wider text-center whitespace-nowrap">PEDIR MÚSICA</span>
+                    <span class="font-black text-white text-[32px] uppercase tracking-widest text-right leading-none mb-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">MÓDULO</span>
+                    <div class="rounded-full px-4 py-1.5 bg-[#951573] shadow-lg border border-white/20 w-full flex justify-center">
+                        <span class="font-black text-white text-[19px] uppercase tracking-widest text-center whitespace-nowrap drop-shadow-md">PEDIR MÚSICA</span>
                     </div>
                 </div>
             </div>
 
-            <div class="w-full bg-[#420B44] rounded-[36px] pt-5 pb-6 px-5 flex flex-col items-center shadow-[0_20px_40px_rgba(0,0,0,0.7)] mb-4 shrink-0 border border-white/5 relative z-20">
-                <div class="flex items-center justify-center gap-2 mb-5">
-                    <span class="text-xl">🎤</span>
-                    <h2 class="font-black text-white text-[22px] uppercase tracking-wider text-center">PEDIR PARA CANTAR</h2>
+            <div class="w-full bg-[#951573]/60 backdrop-blur-sm rounded-[36px] pt-5 pb-6 px-5 flex flex-col items-center shadow-[0_20px_40px_rgba(0,0,0,0.7)] mb-4 shrink-0 border border-white/10 relative z-20">
+                
+                <div class="flex items-center justify-center gap-2 mb-5 w-full">
+                    <span class="text-[20px] shrink-0">🎤</span>
+                    <h2 class="font-black text-white text-[20px] uppercase tracking-wider text-center whitespace-nowrap">PEDIR PARA CANTAR</h2>
                 </div>
 
                 <label class="text-[13px] font-semibold text-white/95 text-center mb-1.5 block w-full">Nome do Artista / Banda</label>
-                <div class="relative w-full h-12 bg-white rounded-[14px] flex items-center px-4 mb-4 shadow-inner">
-                    <input v-model="karaokeArtista" type="text" class="w-full h-full bg-transparent text-black font-bold text-[17px] pr-6" placeholder="">
+                <div class="relative w-full h-12 bg-white rounded-[14px] flex items-center mb-4 shadow-inner">
+                    <input v-model="karaokeArtista" type="text" class="w-full h-full bg-transparent text-black font-bold text-[17px] text-center px-10" placeholder="">
                     <button v-if="karaokeArtista" @click="karaokeArtista = ''" class="absolute right-4 text-gray-500 hover:text-black font-black text-lg">✕</button>
                 </div>
 
                 <label class="text-[13px] font-semibold text-white/95 text-center mb-1.5 block w-full">Nome da Música</label>
-                <div class="relative w-full h-12 bg-white rounded-[14px] flex items-center px-4 mb-6 shadow-inner">
-                    <input v-model="karaokeMusica" type="text" class="w-full h-full bg-transparent text-black font-bold text-[17px] pr-6" placeholder="">
+                <div class="relative w-full h-12 bg-white rounded-[14px] flex items-center mb-6 shadow-inner">
+                    <input v-model="karaokeMusica" type="text" class="w-full h-full bg-transparent text-black font-bold text-[17px] text-center px-10" placeholder="">
                     <button v-if="karaokeMusica" @click="karaokeMusica = ''" class="absolute right-4 text-gray-500 hover:text-black font-black text-lg">✕</button>
                 </div>
 
@@ -551,36 +538,25 @@
         <!-- ================= TELA 7: FILA DE KARAOKÊ ================= -->
         <div v-if="telaAtual === 'fila_karaoke'" class="flex flex-col flex-1 w-full px-4 pb-6 overflow-y-auto custom-scroll relative">
             
-            <div class="flex items-center justify-between w-full px-2 pt-2 pb-4 relative z-10 shrink-0">
-                <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" class="w-[45%] max-w-[140px] object-contain drop-shadow-2xl transform -rotate-2">
+            <!-- Branding The Voice Família (Fixo nas Telas de Karaokê) -->
+            <div class="flex items-center justify-between w-full px-1 pt-1 pb-4 relative z-10 shrink-0">
+                <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" class="w-[45%] max-w-[150px] object-contain drop-shadow-2xl transform -rotate-2">
                 <div class="flex flex-col items-end justify-center flex-1 pl-2">
-                    <span class="font-black text-white text-[28px] uppercase tracking-wider text-right leading-none mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">MÓDULO</span>
-                    <div class="rounded-full px-4 py-1.5 bg-[#831843] shadow-lg border border-white/10">
-                        <span class="font-black text-white text-[17px] uppercase tracking-wider text-center whitespace-nowrap">PEDIR MÚSICA</span>
+                    <span class="font-black text-white text-[32px] uppercase tracking-widest text-right leading-none mb-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">MÓDULO</span>
+                    <div class="rounded-full px-4 py-1.5 bg-[#951573] shadow-lg border border-white/20 w-full flex justify-center">
+                        <span class="font-black text-white text-[19px] uppercase tracking-widest text-center whitespace-nowrap drop-shadow-md">PEDIR MÚSICA</span>
                     </div>
                 </div>
             </div>
 
-            <div class="w-[96%] mx-auto bg-[#420B44] rounded-[36px] pt-5 pb-5 px-3 flex flex-col shadow-[0_20px_40px_rgba(0,0,0,0.8)] mb-4 flex-1 min-h-[300px] border border-white/5 relative overflow-hidden">
+            <div class="w-[96%] mx-auto bg-[#951573]/60 backdrop-blur-sm rounded-[36px] pt-5 pb-5 px-3 flex flex-col shadow-[0_20px_40px_rgba(0,0,0,0.8)] mb-4 flex-1 min-h-[300px] border border-white/10 relative overflow-hidden">
                 
-                <div class="flex items-center justify-center gap-2 mb-6 shrink-0 z-10">
-                    <span class="text-[22px]">🎤</span>
-                    <h2 class="font-black text-white text-[22px] uppercase tracking-wider text-center">JÁ PEDIRAM PARA CANTAR</h2>
+                <div class="flex items-center justify-center gap-2 mb-6 shrink-0 z-10 w-full px-1">
+                    <span class="text-[20px] shrink-0">🎤</span>
+                    <h2 class="font-black text-white text-[20px] uppercase tracking-wider text-center whitespace-nowrap">JÁ PEDIRAM PARA CANTAR</h2>
                 </div>
                 
-                <div class="absolute right-1.5 top-16 bottom-6 w-3 flex flex-col items-center justify-between pointer-events-none opacity-70 z-20">
-                    <span class="text-[9px] text-white/60">▲</span>
-                    <div class="flex-1 w-[2px] bg-white/10 my-1 relative rounded-full">
-                        <div class="absolute top-0 w-full h-12 bg-white/40 rounded-full flex flex-col items-center justify-center gap-[4px] border border-white/20">
-                            <div class="w-1.5 h-[1px] bg-black/50"></div>
-                            <div class="w-1.5 h-[1px] bg-black/50"></div>
-                            <div class="w-1.5 h-[1px] bg-black/50"></div>
-                        </div>
-                    </div>
-                    <span class="text-[9px] text-white/60">▼</span>
-                </div>
-
-                <div class="flex-1 overflow-y-auto custom-scroll pr-4 pl-1 z-10">
+                <div class="flex-1 overflow-y-auto custom-scroll pr-2 pl-1 z-10">
                     <div class="space-y-5 pt-1 pb-4">
                         <div v-for="(pedido, index) in pedidosKaraoke" :key="'kar-'+index" class="relative flex items-stretch w-full">
                             
@@ -610,7 +586,7 @@
                             </div>
                         </div>
                         
-                        <div v-if="pedidosKaraoke.length === 0" class="text-center text-white/50 text-sm py-4 font-semibold">
+                        <div v-if="pedidosKaraoke.length === 0" class="text-center text-white/80 text-sm py-4 font-semibold">
                             Ninguém pediu para cantar ainda.
                         </div>
                     </div>
