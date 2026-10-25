@@ -23,9 +23,32 @@
         @keyframes sheen { 0% { left: -60%; } 20% { left: 140%; } 100% { left: 140%; } }
         .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .custom-scroll::-webkit-scrollbar { display: none; }
-        .marquee-container { display: flex; overflow: hidden; white-space: nowrap; width: 100%; -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent); mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent); }
-        .marquee-text { display: inline-block; padding-right: 15px; animation: marquee 9s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(5%); } 15% { transform: translateX(5%); } 100% { transform: translateX(-100%); } }
+        
+        /* === MARQUEE INTELIGENTE === */
+        .marquee-wrap {
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+            text-align: left;
+        }
+        .marquee-inner {
+            display: inline-block;
+            white-space: nowrap;
+            will-change: transform;
+        }
+        .marquee-wrap.is-overflowing {
+            -webkit-mask-image: linear-gradient(to right, black 0%, black 90%, transparent 100%);
+            mask-image: linear-gradient(to right, black 0%, black 90%, transparent 100%);
+        }
+        .marquee-wrap.is-overflowing .marquee-inner {
+            animation: marquee-scroll var(--scroll-duration, 10s) ease-in-out infinite;
+        }
+        @keyframes marquee-scroll {
+            0%, 10% { transform: translateX(0); }
+            90%, 100% { transform: translateX(var(--scroll-distance, 0px)); }
+        }
+
         select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
         .toast-enter-active, .toast-leave-active { transition: all 0.4s ease; }
         .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(20px); }
@@ -51,7 +74,7 @@
 
         <header class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
             <img src="logo-vdj.png" alt="Logo VirtualDJ" class="h-full object-contain drop-shadow-2xl">
-            <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="irParaCadastro" alt="Avatar do Usuário" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-[2px] border-[#262626]/50">
+            <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'capa-virtualdj.png'" @click="irParaCadastro" alt="Avatar do Usuário" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-[2px] border-[#262626]/50">
         </header>
 
         <main v-if="telaAtual === 'cadastro'" class="flex flex-col flex-1 w-full px-5 pb-8 overflow-y-auto custom-scroll items-center pt-2">
@@ -90,51 +113,61 @@
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </div>
             </button>
-            <section class="w-[90%] bg-[#242627] rounded-[36px] pt-4 pb-6 px-4 flex flex-col items-center shadow-2xl border border-white/5 shrink-0 mt-2">
-                <div class="flex items-center justify-center gap-2 mb-3 text-sm font-black text-white tracking-widest uppercase">
-                    <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                    TOCANDO AGORA
+
+            <!-- ============ CARD TOCANDO AGORA COM BLUR SPOTIFY DE FUNDO ============ -->
+            <section class="w-[90%] bg-[#242627] rounded-[36px] pt-4 pb-6 px-4 flex flex-col items-center shadow-2xl border border-white/5 shrink-0 mt-2 relative overflow-hidden">
+                <!-- BLUR SPOTIFY DE FUNDO -->
+                <div class="absolute inset-0 z-0 pointer-events-none">
+                    <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" class="w-full h-full object-cover blur-2xl scale-125 opacity-30" alt="">
+                    <div class="absolute inset-0 bg-[#242627]/80"></div>
                 </div>
-                
-                <!-- EFEITO SPOTIFY COM CAPA EM 100% DA ALTURA -->
-                <div class="w-full h-44 rounded-2xl overflow-hidden shadow-lg mb-3 bg-zinc-900 relative flex items-center justify-center">
-                    <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" class="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60" alt="">
-                    <div class="absolute inset-0 bg-black/30"></div>
-                    <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" alt="Capa da música atual" class="relative z-10 h-full aspect-square object-cover rounded-xl shadow-2xl border border-white/20">
-                </div>
-                
-                <div class="text-center mb-1 px-2 w-full overflow-hidden relative flex flex-col justify-center items-center">
-                    <div :class="tocandoAgora.titulo.length > 18 ? 'marquee-container w-full' : 'w-full'">
-                        <h2 class="text-[24px] font-black text-white tracking-tight leading-tight" :class="tocandoAgora.titulo.length > 18 ? 'marquee-text' : 'truncate'">{{ tocandoAgora.titulo }}</h2>
+                <!-- CONTEÚDO -->
+                <div class="relative z-10 w-full flex flex-col items-center">
+                    <div class="flex items-center justify-center gap-2 mb-3 text-sm font-black text-white tracking-widest uppercase">
+                        <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                        TOCANDO AGORA
                     </div>
-                    <div :class="tocandoAgora.artista.length > 22 ? 'marquee-container w-full mt-1' : 'w-full mt-1'">
-                        <p class="text-[15px] font-semibold text-gray-300 leading-normal" :class="tocandoAgora.artista.length > 22 ? 'marquee-text' : 'truncate'">{{ tocandoAgora.artista }}</p>
+                    
+                    <div class="w-full h-44 rounded-2xl overflow-hidden shadow-lg mb-3 bg-zinc-900 relative flex items-center justify-center">
+                        <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" class="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60" alt="">
+                        <div class="absolute inset-0 bg-black/30"></div>
+                        <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" alt="Capa da música atual" class="relative z-10 h-full aspect-square object-cover rounded-xl shadow-2xl border border-white/20">
                     </div>
-                </div>
-                <hr class="w-3/5 border-t-[1px] border-white/20 mx-auto my-4">
-                <h3 class="font-black text-white text-lg text-center tracking-normal mb-3">A seguir</h3>
-                <div class="w-full">
-                    <article v-for="(musica, index) in proximasMusicas.slice(0, 2)" :key="index" class="flex items-center justify-between w-full h-16 bg-[#CFCFCF] rounded-2xl overflow-hidden mb-2.5 shadow-md">
-                        <img :src="musica.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg'" alt="Capa da próxima música" class="w-16 h-16 shrink-0 object-cover rounded-l-2xl">
-                        <div class="flex flex-col justify-center flex-1 px-3 min-w-0 relative overflow-hidden">
-                            <div :class="musica.titulo.length > 15 ? 'marquee-container' : ''">
-                                <h4 class="text-[15px] font-black text-black leading-tight" :class="musica.titulo.length > 15 ? 'marquee-text' : 'truncate'">{{ musica.titulo }}</h4>
-                            </div>
-                            <div :class="musica.artista.length > 18 ? 'marquee-container mt-0.5' : 'mt-0.5'">
-                                <p class="text-[12px] font-semibold text-gray-700 leading-tight" :class="musica.artista.length > 18 ? 'marquee-text' : 'truncate'">{{ musica.artista }}</p>
-                            </div>
+                    
+                    <div class="text-center mb-1 px-2 w-full overflow-hidden relative flex flex-col justify-center items-center">
+                        <div v-marquee="tocandoAgora.titulo" class="marquee-wrap w-full">
+                            <h2 class="marquee-inner text-[24px] font-black text-white tracking-tight leading-tight">{{ tocandoAgora.titulo }}</h2>
                         </div>
-                        <div class="flex flex-col items-center justify-center pr-3 shrink-0 min-w-[70px] border-l border-black/10 ml-1">
-                            <p class="text-[9px] font-medium text-gray-700 leading-none">posição</p>
-                            <p class="text-xl font-black text-black leading-tight my-0.5">{{ index + 2 }}</p>
-                            <p class="text-[9px] font-medium text-gray-700 leading-none whitespace-nowrap">no deck do DJ</p>
+                        <div v-marquee="tocandoAgora.artista" class="marquee-wrap w-full mt-1">
+                            <p class="marquee-inner text-[15px] font-semibold text-gray-300 leading-normal">{{ tocandoAgora.artista }}</p>
                         </div>
-                    </article>
-                    <div v-if="proximasMusicas.length === 0" class="text-center text-gray-400 text-sm font-semibold py-2">
-                        Nenhuma música no automix.
+                    </div>
+                    <hr class="w-3/5 border-t-[1px] border-white/20 mx-auto my-4">
+                    <h3 class="font-black text-white text-lg text-center tracking-normal mb-3">A seguir</h3>
+                    <div class="w-full">
+                        <article v-for="(musica, index) in proximasMusicas.slice(0, 2)" :key="index" class="flex items-center justify-between w-full h-16 bg-[#CFCFCF] rounded-2xl overflow-hidden mb-2.5 shadow-md">
+                            <img :src="musica.capa || 'capa-virtualdj.png'" alt="Capa da próxima música" class="w-16 h-16 shrink-0 object-cover rounded-l-2xl">
+                            <div class="flex flex-col justify-center flex-1 px-3 min-w-0 relative overflow-hidden">
+                                <div v-marquee="musica.titulo" class="marquee-wrap">
+                                    <h4 class="marquee-inner text-[15px] font-black text-black leading-tight">{{ musica.titulo }}</h4>
+                                </div>
+                                <div v-marquee="musica.artista" class="marquee-wrap mt-0.5">
+                                    <p class="marquee-inner text-[12px] font-semibold text-gray-700 leading-tight">{{ musica.artista }}</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center justify-center pr-3 shrink-0 min-w-[70px] border-l border-black/10 ml-1">
+                                <p class="text-[9px] font-medium text-gray-700 leading-none">posição</p>
+                                <p class="text-xl font-black text-black leading-tight my-0.5">{{ index + 2 }}</p>
+                                <p class="text-[9px] font-medium text-gray-700 leading-none whitespace-nowrap">no deck do DJ</p>
+                            </div>
+                        </article>
+                        <div v-if="proximasMusicas.length === 0" class="text-center text-gray-400 text-sm font-semibold py-2">
+                            Nenhuma música no automix.
+                        </div>
                     </div>
                 </div>
             </section>
+
             <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
                 <button @click="irParaProximas" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <span>VER PRÓXIMAS</span>
@@ -146,28 +179,37 @@
         </main>
 
         <main v-if="telaAtual === 'proximas'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
-            <section class="bg-[#2a2a2a] rounded-[2.5rem] pt-6 pb-2 px-2 w-full shadow-2xl flex-1 flex flex-col border border-white/10 min-h-0 mt-2">
-                <h3 class="text-center font-bold text-[22px] mb-4 text-white tracking-wide shrink-0">A seguir</h3>
-                <div class="flex-1 overflow-y-auto custom-scroll px-4">
-                    <div class="space-y-4 pt-2 pb-4">
-                        <article v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-[3.5rem] pr-4 flex items-center gap-2 shadow-md ml-3">
-                            <img :src="musica.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg'" alt="Capa da música" class="absolute -left-3 w-[72px] h-[72px] rounded-xl object-cover shadow-xl bg-zinc-300 shrink-0 border-2 border-white">
-                            <div class="flex-1 min-w-0 pl-2 pr-2 overflow-hidden relative">
-                                <div :class="musica.titulo.length > 16 ? 'marquee-container' : ''">
-                                    <h4 class="font-extrabold text-[16px] leading-tight text-black" :class="musica.titulo.length > 16 ? 'marquee-text' : 'truncate'">{{ musica.titulo }}</h4>
+            <!-- ============ CARD A SEGUIR COM BLUR SPOTIFY DE FUNDO ============ -->
+            <section class="bg-[#2a2a2a] rounded-[2.5rem] pt-6 pb-2 px-2 w-full shadow-2xl flex-1 flex flex-col border border-white/10 min-h-0 mt-2 relative overflow-hidden">
+                <!-- BLUR SPOTIFY DE FUNDO -->
+                <div class="absolute inset-0 z-0 pointer-events-none">
+                    <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" class="w-full h-full object-cover blur-2xl scale-125 opacity-30" alt="">
+                    <div class="absolute inset-0 bg-[#2a2a2a]/80"></div>
+                </div>
+                <!-- CONTEÚDO -->
+                <div class="relative z-10 flex-1 flex flex-col min-h-0">
+                    <h3 class="text-center font-bold text-[22px] mb-4 text-white tracking-wide shrink-0">A seguir</h3>
+                    <div class="flex-1 overflow-y-auto custom-scroll px-4">
+                        <div class="space-y-4 pt-2 pb-4">
+                            <article v-for="(musica, index) in proximasMusicas" :key="index" class="relative bg-[#f0f0f0] text-black rounded-[1.25rem] py-3 pl-[3.5rem] pr-4 flex items-center gap-2 shadow-md ml-3">
+                                <img :src="musica.capa || 'capa-virtualdj.png'" alt="Capa da música" class="absolute -left-3 w-[72px] h-[72px] rounded-xl object-cover shadow-xl bg-zinc-300 shrink-0 border-2 border-white">
+                                <div class="flex-1 min-w-0 pl-2 pr-2 overflow-hidden relative">
+                                    <div v-marquee="musica.titulo" class="marquee-wrap">
+                                        <h4 class="marquee-inner font-extrabold text-[16px] leading-tight text-black">{{ musica.titulo }}</h4>
+                                    </div>
+                                    <div v-marquee="musica.artista" class="marquee-wrap mt-1">
+                                        <p class="marquee-inner text-[13px] text-[#555555]">{{ musica.artista }}</p>
+                                    </div>
                                 </div>
-                                <div :class="musica.artista.length > 18 ? 'marquee-container mt-1' : 'mt-1'">
-                                    <p class="text-[13px] text-[#555555]" :class="musica.artista.length > 18 ? 'marquee-text' : 'truncate'">{{ musica.artista }}</p>
+                                <div class="text-center px-2 shrink-0 border-l border-[#d0d0d0]">
+                                    <p class="text-[10px] font-medium text-gray-500 leading-none lowercase tracking-wide">posição</p>
+                                    <p class="font-black text-[24px] leading-none my-0.5 text-black">{{ index + 2 }}</p>
+                                    <p class="text-[9px] font-medium text-gray-500 leading-none lowercase tracking-wide">no deck do DJ</p>
                                 </div>
+                            </article>
+                            <div v-if="proximasMusicas.length === 0" class="text-center text-gray-400 text-sm font-semibold py-4">
+                                Nenhuma música no automix.
                             </div>
-                            <div class="text-center px-2 shrink-0 border-l border-[#d0d0d0]">
-                                <p class="text-[10px] font-medium text-gray-500 leading-none lowercase tracking-wide">posição</p>
-                                <p class="font-black text-[24px] leading-none my-0.5 text-black">{{ index + 2 }}</p>
-                                <p class="text-[9px] font-medium text-gray-500 leading-none lowercase tracking-wide">no deck do DJ</p>
-                            </div>
-                        </article>
-                        <div v-if="proximasMusicas.length === 0" class="text-center text-gray-400 text-sm font-semibold py-4">
-                            Nenhuma música no automix.
                         </div>
                     </div>
                 </div>
@@ -276,17 +318,17 @@
                                 <span class="font-black uppercase text-white">{{ pedido.pedinte }}</span> já pediu para tocar
                             </p>
                             <div class="relative bg-[#C8C8C8] rounded-r-2xl rounded-l-full h-[64px] flex items-center justify-between shadow-md pr-1.5">
-                                <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" alt="Avatar" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10">
+                                <img :src="pedido.avatar || 'capa-virtualdj.png'" alt="Avatar" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10">
                                 <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full overflow-hidden relative">
-                                    <div :class="pedido.titulo.length > 15 ? 'marquee-container' : ''">
-                                        <h4 class="font-black text-[15px] text-black leading-snug" :class="pedido.titulo.length > 15 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
+                                    <div v-marquee="pedido.titulo" class="marquee-wrap">
+                                        <h4 class="marquee-inner font-black text-[15px] text-black leading-snug">{{ pedido.titulo }}</h4>
                                     </div>
-                                    <div :class="pedido.artista.length > 18 ? 'marquee-container mt-0.5' : 'mt-0.5'">
-                                        <p class="text-[12px] font-semibold text-gray-700 leading-none" :class="pedido.artista.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
+                                    <div v-marquee="pedido.artista" class="marquee-wrap mt-0.5">
+                                        <p class="marquee-inner text-[12px] font-semibold text-gray-700 leading-none">{{ pedido.artista }}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0 h-full">
-                                    <img :src="pedido.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg'" alt="Capa" class="h-full w-[64px] object-cover rounded-none border border-black/10 shrink-0">
+                                    <img :src="pedido.capa || 'capa-virtualdj.png'" alt="Capa" class="h-full w-[64px] object-cover rounded-none border border-black/10 shrink-0">
                                     <div class="bg-gradient-to-b from-[#FBBF24] to-[#F59E0B] h-[52px] w-[48px] rounded-xl flex flex-col items-center justify-center shadow-sm shrink-0">
                                         <svg class="w-5 h-5 text-white mb-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         <span class="text-[#D97706] font-black text-[8px] uppercase tracking-tighter">NA FILA</span>
@@ -307,17 +349,17 @@
                                 Já tocamos para <span class="font-black uppercase text-white">{{ pedido.pedinte }}</span> às <span class="font-black text-white">{{ pedido.hora }}</span>
                             </p>
                             <div class="relative bg-[#5B5E63] rounded-r-2xl rounded-l-full h-[64px] flex items-center justify-between shadow-md pr-1.5">
-                                <img :src="pedido.avatar || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" alt="Avatar" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10 grayscale opacity-90">
+                                <img :src="pedido.avatar || 'capa-virtualdj.png'" alt="Avatar" class="absolute -left-8 bottom-0 w-[76px] h-[76px] rounded-full object-cover shadow-lg border-[3px] border-[#242627] z-10 grayscale opacity-90">
                                 <div class="flex flex-col justify-center flex-1 min-w-0 pl-[48px] pr-2 h-full overflow-hidden relative">
-                                    <div :class="pedido.titulo.length > 15 ? 'marquee-container' : ''">
-                                        <h4 class="font-black text-[15px] text-white leading-snug" :class="pedido.titulo.length > 15 ? 'marquee-text' : 'truncate'">{{ pedido.titulo }}</h4>
+                                    <div v-marquee="pedido.titulo" class="marquee-wrap">
+                                        <h4 class="marquee-inner font-black text-[15px] text-white leading-snug">{{ pedido.titulo }}</h4>
                                     </div>
-                                    <div :class="pedido.artista.length > 18 ? 'marquee-container mt-0.5' : 'mt-0.5'">
-                                        <p class="text-[12px] font-semibold text-gray-300 leading-none" :class="pedido.artista.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
+                                    <div v-marquee="pedido.artista" class="marquee-wrap mt-0.5">
+                                        <p class="marquee-inner text-[12px] font-semibold text-gray-300 leading-none">{{ pedido.artista }}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0 h-full">
-                                    <img :src="pedido.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg'" alt="Capa" class="h-full w-[64px] object-cover rounded-none border border-black/20 shrink-0 grayscale opacity-80">
+                                    <img :src="pedido.capa || 'capa-virtualdj.png'" alt="Capa" class="h-full w-[64px] object-cover rounded-none border border-black/20 shrink-0 grayscale opacity-80">
                                     <div class="bg-[#8C8F94] h-[52px] w-[48px] rounded-xl flex flex-col items-center justify-center shadow-sm shrink-0 border border-gray-400/30">
                                         <svg class="w-5 h-5 text-white/70 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         <span class="text-[#374151] font-black text-[8px] uppercase tracking-tighter">JÁ TOCOU</span>
@@ -428,7 +470,7 @@
                     <div class="space-y-5 pt-1 pb-4">
                         <article v-for="(pedido, index) in pedidosKaraoke" :key="'kar-'+index" class="relative flex items-stretch w-full">
                             <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-[72px] h-[72px] rounded-full overflow-hidden shadow-xl z-20 border-[3px] border-[#420B44]">
-                                <img :src="pedido.avatar" alt="Avatar do usuário" class="w-full h-full object-cover">
+                                <img :src="pedido.avatar || 'capa-virtualdj.png'" alt="Avatar do usuário" class="w-full h-full object-cover">
                             </div>
                             <div class="flex flex-col w-full pl-[56px] z-10">
                                 <header class="w-full bg-[#350838] rounded-t-[14px] pr-2.5 py-1.5 flex items-center justify-between min-h-[26px]">
@@ -437,11 +479,11 @@
                                 </header>
                                 <div class="w-full bg-[#D8D8DC] rounded-b-[16px] pr-2.5 py-2.5 flex items-center justify-between pl-[18px] min-h-[52px]">
                                     <div class="flex flex-col overflow-hidden mr-2 flex-1 relative">
-                                        <div :class="pedido.musica.length > 18 ? 'marquee-container' : ''">
-                                            <h4 class="text-[15px] font-black text-black leading-tight" :class="pedido.musica.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.musica }}</h4>
+                                        <div v-marquee="pedido.musica" class="marquee-wrap">
+                                            <h4 class="marquee-inner text-[15px] font-black text-black leading-tight">{{ pedido.musica }}</h4>
                                         </div>
-                                        <div :class="pedido.artista.length > 22 ? 'marquee-container mt-0.5' : 'mt-0.5'">
-                                            <p class="text-[12px] font-bold text-gray-700 leading-none" :class="pedido.artista.length > 22 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
+                                        <div v-marquee="pedido.artista" class="marquee-wrap mt-0.5">
+                                            <p class="marquee-inner text-[12px] font-bold text-gray-700 leading-none">{{ pedido.artista }}</p>
                                         </div>
                                     </div>
                                     <div class="rounded-md px-2.5 py-1 shrink-0 bg-[#831843] shadow-sm border border-black/10">
@@ -476,11 +518,47 @@
 
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
-        const IMGBB_API_KEY = '5b0d512fa2132911bcdb68f224a8943b'; 
-        const socket = io('https://vdj-requests-cloud.onrender.com');
+
+        function checkMarqueeOverflow(el) {
+            const inner = el.querySelector('.marquee-inner');
+            if (!inner) return;
+
+            el.classList.remove('is-overflowing');
+            el.style.setProperty('--scroll-distance', '0px');
+
+            // Força o reflow antes de medir
+            void el.offsetHeight;
+
+            const contentWidth = inner.scrollWidth;
+            const containerWidth = el.clientWidth;
+
+            if (contentWidth > containerWidth + 2) {
+                const distance = contentWidth - containerWidth + 16;
+                const duration = Math.max(8, Math.round(distance / 40));
+                el.style.setProperty('--scroll-distance', `-${distance}px`);
+                el.style.setProperty('--scroll-duration', `${duration}s`);
+                el.classList.add('is-overflowing');
+            }
+        }
 
         createApp({
+            directives: {
+                marquee: {
+                    mounted(el) {
+                        setTimeout(() => checkMarqueeOverflow(el), 200);
+                        setTimeout(() => checkMarqueeOverflow(el), 1500);
+                    },
+                    updated(el, binding) {
+                        if (binding.oldValue !== binding.value) {
+                            checkMarqueeOverflow(el);
+                        }
+                    }
+                }
+            },
             setup() {
+                const IMGBB_API_KEY = '5b0d512fa2132911bcdb68f224a8943b'; 
+                const socket = io('https://vdj-requests-cloud.onrender.com');
+
                 const telaAtual = ref('cadastro');
                 const temaAtual = ref('pista'); 
                 const nome = ref('');
@@ -489,7 +567,7 @@
                 const uploading = ref(false);
                 const toast = ref({ ativa: false, tipo: 'sucesso', mensagem: '' });
                 
-                const tocandoAgora = ref({ titulo: 'Aguardando DJ...', artista: 'VirtualDJ', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
+                const tocandoAgora = ref({ titulo: 'Aguardando DJ...', artista: 'VirtualDJ', capa: 'capa-virtualdj.png' });
                 const proximasMusicas = ref([]);
                 const catalogo = ref([]);
                 const pedidosFila = ref([]);
@@ -579,10 +657,10 @@
                     if (!musicaPronta.value) return;
                     const pedidoObj = {
                         pedinte: nome.value || 'Usuário',
-                        avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
+                        avatar: fotoUrl.value || 'capa-virtualdj.png',
                         titulo: musicaSelecionada.value.titulo,
                         artista: musicaSelecionada.value.artista,
-                        capa: musicaSelecionada.value.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg',
+                        capa: musicaSelecionada.value.capa || 'capa-virtualdj.png',
                         status: 'fila'
                     };
                     socket.emit('novo_pedido_pista', pedidoObj);
@@ -598,7 +676,7 @@
                     
                     const pedidoKaraokeObj = {
                         pedinte: nome.value || 'USUÁRIO',
-                        avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
+                        avatar: fotoUrl.value || 'capa-virtualdj.png',
                         musica: karaokeMusica.value,
                         artista: karaokeArtista.value,
                         modo: karaokeModo.value.toUpperCase(),
