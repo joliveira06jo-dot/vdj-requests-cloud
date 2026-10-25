@@ -38,11 +38,8 @@ function emitirEstadoCompleto(target) {
         banidos: estado.banidos,
         comunicados: estado.comunicados.slice(-50)
     };
-    if (target) {
-        target.emit('estado_atualizado', payload);
-    } else {
-        io.emit('estado_atualizado', payload);
-    }
+    if (target) target.emit('estado_atualizado', payload);
+    else io.emit('estado_atualizado', payload);
 }
 
 io.on('connection', (socket) => {
@@ -53,7 +50,6 @@ io.on('connection', (socket) => {
     socket.emit('auto_status', { ativo: estado.autoAtivo });
     socket.emit('pausa_status', { pausado: estado.pausado });
 
-    // === BRIDGE ===
     socket.on('registrar_bridge', () => {
         bridgeSocketId = socket.id;
         estado.bridgeOnline = true;
@@ -70,7 +66,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // === RESTAURAÇÃO DE BACKUP ===
     socket.on('restaurar_estado', (backup) => {
         const vazio = estado.filaPista.length === 0 && estado.filaKaraoke.length === 0 && estado.historicoPista.length === 0;
         if (vazio) {
@@ -88,7 +83,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // === CATÁLOGO ===
     socket.on('sync_catalogo', (dados) => {
         estado.catalogo = dados;
         io.emit('catalogo_atualizado', dados);
@@ -100,7 +94,19 @@ io.on('connection', (socket) => {
         io.emit('deck_atualizado', estado.deckPista);
     });
 
-    // === NOVOS PEDIDOS ===
+    // ===== CAMINHO RESOLVIDO (Bridge informa o path real) =====
+    socket.on('caminho_resolvido', (dados) => {
+        const pedido = estado.filaPista.find(p =>
+            p.titulo === dados.titulo &&
+            p.artista === dados.artista &&
+            (p.timestamp_pedido || 0) === (dados.timestamp_pedido || 0)
+        );
+        if (pedido) {
+            pedido.caminho = dados.caminho;
+            io.emit('fila_pista_atualizada', estado.filaPista);
+        }
+    });
+
     socket.on('novo_pedido_pista', (pedido) => {
         const agora = Date.now();
         const nomeUser = (pedido.pedinte || '').toLowerCase();
@@ -113,10 +119,10 @@ io.on('connection', (socket) => {
         if (estado.filaPista.some(p => p.titulo === pedido.titulo && p.artista === pedido.artista)) {
             return socket.emit('erro_pedido', { msg: 'Essa música já está na fila!' });
         }
-        const tocouRecente = estado.historicoPista.some(p =>
+        const recente = estado.historicoPista.some(p =>
             p.titulo === pedido.titulo && p.artista === pedido.artista && (agora - p.timestamp_tocado) < COOLDOWN_MS
         );
-        if (tocouRecente) {
+        if (recente) {
             return socket.emit('erro_pedido', { msg: 'Essa música já tocou há menos de 2h.' });
         }
         estado.filaPista.push(pedido);
@@ -134,7 +140,6 @@ io.on('connection', (socket) => {
         emitirEstadoCompleto();
     });
 
-    // === MÚSICA TOCADA (via log do VDJ) ===
     socket.on('musica_tocada', (dados) => {
         const idx = estado.filaPista.findIndex(p =>
             p.titulo.toLowerCase().includes(dados.titulo.toLowerCase()) ||
@@ -153,18 +158,14 @@ io.on('connection', (socket) => {
         emitirEstadoCompleto();
     });
 
-    // === AUTO STATUS ===
     socket.on('auto_status_atualizado', (data) => {
         estado.autoAtivo = data.ativo;
         io.emit('auto_status', { ativo: estado.autoAtivo });
     });
 
-    // === INJEÇÃO RESULTADO ===
-    socket.on('injecao_resultado', (resultado) => {
-        io.emit('injecao_resultado', resultado);
-    });
+    socket.on('injecao_resultado', (r) => { io.emit('injecao_resultado', r); });
 
-    // === AÇÕES DO ADMIN ===
+    // === AÇÕES ADMIN ===
     socket.on('admin_toggle_pausa', () => {
         estado.pausado = !estado.pausado;
         io.emit('pausa_status', { pausado: estado.pausado });
@@ -182,7 +183,8 @@ io.on('connection', (socket) => {
             io.to(bridgeSocketId).emit('comando_admin', {
                 action: 'forcar_injecao',
                 titulo: dados.titulo,
-                artista: dados.artista
+                artista: dados.artista,
+                caminho: dados.caminho || ''
             });
         }
     });
@@ -222,17 +224,18 @@ io.on('connection', (socket) => {
         estado.banidos = estado.banidos.filter(b => b !== dados.nome);
         io.emit('banidos_atualizados', estado.banidos);
         emitirEstadoCompleto();
+        console.log(`[ADMIN] Desbanido: ${dados.nome}`);
     });
 
     socket.on('admin_enviar_comunicado', (dados) => {
-        const comunicado = {
+        const c = {
             id: Date.now(),
             texto: dados.texto,
             hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
             data: new Date().toLocaleDateString('pt-BR')
         };
-        estado.comunicados.push(comunicado);
-        io.emit('comunicado_recebido', comunicado);
+        estado.comunicados.push(c);
+        io.emit('comunicado_recebido', c);
         emitirEstadoCompleto();
         console.log(`[ADMIN] Comunicado: ${dados.texto}`);
     });
@@ -259,24 +262,20 @@ io.on('connection', (socket) => {
         console.log(`[ADMIN] Cooldown liberado: ${dados.titulo}`);
     });
 
-    // === ESTATÍSTICAS ===
     socket.on('admin_pedir_estatisticas', () => {
         const totalPedidos = estado.historicoPista.length + estado.filaPista.length;
         const totalTocados = estado.historicoPista.length;
-        let tempoMedioEspera = 0;
+        let tempoMedio = 0;
         if (estado.historicoPista.length > 0) {
             const tempos = estado.historicoPista
                 .filter(p => p.timestamp_tocado && p.timestamp_pedido)
                 .map(p => p.timestamp_tocado - p.timestamp_pedido);
-            if (tempos.length > 0) {
-                tempoMedioEspera = Math.round(tempos.reduce((a, b) => a + b, 0) / tempos.length / 60000);
-            }
+            if (tempos.length > 0) tempoMedio = Math.round(tempos.reduce((a, b) => a + b, 0) / tempos.length / 60000);
         }
-        const convidadosAtivos = [...new Set(estado.filaPista.concat(estado.historicoPista).map(p => p.pedinte))].length;
+        const convidados = [...new Set(estado.filaPista.concat(estado.historicoPista).map(p => p.pedinte))].length;
         socket.emit('estatisticas', {
-            totalPedidos, totalTocados, tempoMedioEspera, convidadosAtivos,
-            cooldownsAtivos: estado.historicoPista.length,
-            banidos: estado.banidos.length
+            totalPedidos, totalTocados, tempoMedioEspera: tempoMedio, convidadosAtivos: convidados,
+            cooldownsAtivos: estado.historicoPista.length, banidos: estado.banidos.length
         });
     });
 
@@ -285,9 +284,7 @@ io.on('connection', (socket) => {
         const ativos = estado.historicoPista
             .filter(p => (agora - p.timestamp_tocado) < COOLDOWN_MS)
             .map(p => ({
-                titulo: p.titulo,
-                artista: p.artista,
-                hora: p.hora,
+                titulo: p.titulo, artista: p.artista, hora: p.hora,
                 minutosRestantes: Math.round((COOLDOWN_MS - (agora - p.timestamp_tocado)) / 60000)
             }));
         socket.emit('cooldowns', ativos);
