@@ -622,7 +622,9 @@
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
         
-        const IMGBB_API_KEY = 'COLOQUE_A_SUA_CHAVE_AQUI'; 
+        const IMGBB_API_KEY = '5b0d512fa2132911bcdb68f224a8943b'; 
+        // Conexão com o seu servidor na nuvem
+        const socket = io('https://vdj-requests-cloud.onrender.com');
 
         createApp({
             setup() {
@@ -634,56 +636,70 @@
                 const uploading = ref(false);
                 const toast = ref({ ativa: false, tipo: 'sucesso', mensagem: '' });
                 
-                const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
-                const proximasMusicas = ref([
-                    { titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
-                    { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' }
-                ]);
+                // Dados em tempo real
+                const tocandoAgora = ref({ titulo: 'Aguardando...', artista: 'DJ', capa: 'https://i.ibb.co/6H9nkWm/default-avatar.png' });
+                const proximasMusicas = ref([]);
+                const catalogo = ref([]);
+                const pedidosGerais = ref([]);
+                const pedidosKaraoke = ref([]);
 
-                // LÓGICA DA PISTA (TELA 4 E 5)
+                // Listeners do Socket.io
+                socket.on('estado_atualizado', (estado) => {
+                    pedidosGerais.value = [...estado.filaPista, ...estado.historicoPista.map(p => ({...p, status: 'tocado'}))].reverse();
+                    
+                    // Atualiza o painel do DJ (Tocando Agora e Próximas)
+                    if (estado.filaPista.length > 0) {
+                        tocandoAgora.value = estado.filaPista[0];
+                        proximasMusicas.value = estado.filaPista.slice(1);
+                    } else {
+                        tocandoAgora.value = { titulo: 'Seleção do DJ', artista: 'Ao Vivo', capa: 'https://i.ibb.co/6H9nkWm/default-avatar.png' };
+                        proximasMusicas.value = [];
+                    }
+                });
+
+                socket.on('catalogo_atualizado', (dados) => {
+                    catalogo.value = dados;
+                });
+
+                socket.on('fila_pista_atualizada', (fila) => {
+                    pedidosGerais.value = [...fila, ...pedidosGerais.value.filter(p => p.status === 'tocado')].reverse();
+                    if (fila.length > 0) {
+                        tocandoAgora.value = fila[0];
+                        proximasMusicas.value = fila.slice(1);
+                    }
+                });
+
+                socket.on('fila_karaoke_atualizada', (fila) => {
+                    pedidosKaraoke.value = fila.reverse();
+                });
+
+                socket.on('erro_pedido', (erro) => {
+                    mostrarToast('erro', erro.msg);
+                });
+
+                // LÓGICA DA PISTA
                 const textoBusca = ref('');
                 const artistaSelecionado = ref('');
                 const musicaSelecionada = ref('');
                 const apenasMeusPedidos = ref(false);
 
-                const catalogoMock = ref([
-                    { id: 1, artista: 'Anitta', titulo: 'Na Batida (Ao Vivo)', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' },
-                    { id: 2, artista: 'Katy Perry', titulo: 'Dark Horse (part. Juicy J)', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
-                    { id: 3, artista: 'Jorge e Mateus', titulo: 'Primavera', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
-                    { id: 4, artista: 'Marília Mendonça', titulo: 'Graveto', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' },
-                    { id: 5, artista: 'Anitta', titulo: 'Show das Poderosas', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' }
-                ]);
-
-                const pedidosGerais = ref([
-                    { pedinte: 'Julio', avatar: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg', titulo: 'Na Batida (Ao Vivo)', artista: 'Anitta', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg', status: 'fila', hora: null },
-                    { pedinte: 'Marcos', avatar: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg', titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg', status: 'fila', hora: null },
-                    { pedinte: 'Julio', avatar: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg', titulo: 'Dark Horse (part. Juicy J)', artista: 'Katy Perry', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg', status: 'tocado', hora: '22:12' },
-                    { pedinte: 'Camila', avatar: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg', titulo: 'Show das Poderosas', artista: 'Anitta', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg', status: 'tocado', hora: '21:45' }
-                ]);
-
-                // LÓGICA DO KARAOKÊ (TELA 6 E 7)
+                // LÓGICA DO KARAOKÊ
                 const karaokeArtista = ref('');
                 const karaokeMusica = ref('');
                 const karaokeModo = ref('solo');
-                
-                const pedidosKaraoke = ref([
-                    { pedinte: 'JÚLIO', avatar: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg', musica: 'Evidências', artista: 'Chitãozinho & Xororó', modo: 'SOLO', hora: '22:12 - 31/12/2026' },
-                    { pedinte: 'FELIPE', avatar: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg', musica: 'Dormi na Praça', artista: 'Bruno & Marrone', modo: 'SOLO', hora: '22:12 - 31/12/2026' },
-                    { pedinte: 'JÚLIAV', avatar: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg', musica: 'Cheia de Manias', artista: 'Raça Negra', modo: 'DUETO', hora: '22:12 - 31/12/2026' }
-                ]);
 
                 // COMPUTEDS DA PISTA
-                const artistasUnicos = computed(() => [...new Set(catalogoMock.value.map(m => m.artista))].sort());
-                const musicasDoArtista = computed(() => catalogoMock.value.filter(m => m.artista === artistaSelecionado.value).sort((a, b) => a.titulo.localeCompare(b.titulo)));
+                const artistasUnicos = computed(() => [...new Set(catalogo.value.map(m => m.artista))].sort());
+                const musicasDoArtista = computed(() => catalogo.value.filter(m => m.artista === artistaSelecionado.value).sort((a, b) => a.titulo.localeCompare(b.titulo)));
                 const resultadosBusca = computed(() => {
                     if (!textoBusca.value || textoBusca.value.length < 2) return [];
                     const termo = textoBusca.value.toLowerCase();
-                    return catalogoMock.value.filter(m => m.artista.toLowerCase().includes(termo) || m.titulo.toLowerCase().includes(termo));
+                    return catalogo.value.filter(m => m.artista.toLowerCase().includes(termo) || m.titulo.toLowerCase().includes(termo));
                 });
                 const musicaPronta = computed(() => musicaSelecionada.value !== '' && musicaSelecionada.value != null);
                 
                 const filaEsperaExibida = computed(() => {
-                    let fila = pedidosGerais.value.filter(p => p.status === 'fila');
+                    let fila = pedidosGerais.value.filter(p => p.status !== 'tocado');
                     if (apenasMeusPedidos.value && nome.value) fila = fila.filter(p => p.pedinte.toLowerCase() === nome.value.toLowerCase());
                     return fila;
                 });
@@ -694,20 +710,16 @@
                     return hist;
                 });
 
-                // COMPUTEDS DO KARAOKÊ
                 const karaokeValido = computed(() => karaokeArtista.value.trim() !== '' && karaokeMusica.value.trim() !== '');
 
-                // FUNÇÕES DE NAVEGAÇÃO BLINDADAS (FORÇAM O TEMA CORRETO)
                 const irParaCadastro = () => { temaAtual.value = 'pista'; telaAtual.value = 'cadastro'; };
                 const irParaPrincipal = () => { temaAtual.value = 'pista'; telaAtual.value = 'principal'; };
                 const irParaBusca = () => { temaAtual.value = 'pista'; telaAtual.value = 'busca'; };
                 const irParaFila = () => { temaAtual.value = 'pista'; telaAtual.value = 'fila_espera'; };
                 const irParaProximas = () => { temaAtual.value = 'pista'; telaAtual.value = 'proximas'; };
-                
                 const irParaKaraoke = () => { temaAtual.value = 'karaoke'; telaAtual.value = 'busca_karaoke'; };
                 const irParaFilaKaraoke = () => { temaAtual.value = 'karaoke'; telaAtual.value = 'fila_karaoke'; };
 
-                // FUNÇÕES DA PISTA
                 const atualizarBusca = (e) => { textoBusca.value = e.target.value; musicaSelecionada.value = ''; };
                 const limparBusca = () => { textoBusca.value = ''; musicaSelecionada.value = ''; };
                 const resetarMusica = () => { musicaSelecionada.value = ''; textoBusca.value = ''; };
@@ -719,36 +731,41 @@
 
                 const confirmarPedido = () => {
                     if (!musicaPronta.value) return;
-                    const duplicada = pedidosGerais.value.some(p => p.titulo === musicaSelecionada.value.titulo && p.status === 'fila');
-                    if (duplicada) {
-                        mostrarToast('aviso', 'Essa música já está na fila da pista!');
-                    } else {
-                        pedidosGerais.value.unshift({
-                            pedinte: nome.value || 'Usuário', avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
-                            titulo: musicaSelecionada.value.titulo, artista: musicaSelecionada.value.artista, capa: musicaSelecionada.value.capa,
-                            status: 'fila', hora: null
-                        });
-                        mostrarToast('sucesso', 'Pedido enviado com sucesso! 🚀');
-                    }
-                    artistaSelecionado.value = ''; musicaSelecionada.value = ''; textoBusca.value = '';
+                    
+                    const pedidoObj = {
+                        pedinte: nome.value || 'Usuário',
+                        avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
+                        titulo: musicaSelecionada.value.titulo,
+                        artista: musicaSelecionada.value.artista,
+                        capa: musicaSelecionada.value.capa || 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg',
+                        status: 'fila'
+                    };
+
+                    socket.emit('novo_pedido_pista', pedidoObj);
+                    mostrarToast('sucesso', 'Pedido enviado com sucesso! 🚀');
+                    
+                    artistaSelecionado.value = ''; 
+                    musicaSelecionada.value = ''; 
+                    textoBusca.value = '';
+                    irParaFila();
                 };
 
-                // FUNÇÃO DO PEDIDO DE KARAOKÊ
                 const confirmarKaraoke = () => {
                     if (!karaokeValido.value) return;
                     
                     const now = new Date();
                     const horaStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
                     
-                    pedidosKaraoke.value.unshift({
+                    const pedidoKaraokeObj = {
                         pedinte: nome.value || 'USUÁRIO',
                         avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
                         musica: karaokeMusica.value,
                         artista: karaokeArtista.value,
                         modo: karaokeModo.value.toUpperCase(),
                         hora: horaStr
-                    });
+                    };
 
+                    socket.emit('novo_pedido_karaoke', pedidoKaraokeObj);
                     mostrarToast('sucesso', 'Pedido anotado para o show! 🎤');
                     
                     karaokeArtista.value = '';
@@ -774,17 +791,14 @@
                         const data = await res.json();
                         if (data.success) fotoUrl.value = data.data.url;
                     } catch (e) {
-                        alert('Falha na conexão com o ImgBB.'); fotoPreview.value = '';
+                        mostrarToast('erro', 'Falha na conexão com o ImgBB.'); 
+                        fotoPreview.value = '';
                     } finally { uploading.value = false; }
                 };
 
                 const avancar = () => {
                     localStorage.setItem('vdj_nome', nome.value);
                     if (fotoUrl.value) localStorage.setItem('vdj_foto', fotoUrl.value);
-                    if(nome.value.toLowerCase() === 'julio') {
-                        pedidosGerais.value.forEach(p => { if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png'; });
-                        pedidosKaraoke.value.forEach(p => { if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png'; });
-                    }
                     irParaPrincipal();
                 };
 
