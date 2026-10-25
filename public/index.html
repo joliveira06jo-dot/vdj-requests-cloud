@@ -31,6 +31,14 @@
             z-index: -10;
         }
 
+        /* Transição Suave na Troca de Fundos */
+        .fade-bg-enter-active, .fade-bg-leave-active {
+            transition: opacity 0.6s ease-in-out;
+        }
+        .fade-bg-enter-from, .fade-bg-leave-to {
+            opacity: 0;
+        }
+
         @keyframes pulseZoom {
             0% { transform: scale(1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
             50% { transform: scale(1.015); box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7); }
@@ -108,7 +116,11 @@
 <body>
     <div id="app" class="max-w-md mx-auto relative h-[100dvh] flex flex-col font-['Poppins'] overflow-hidden">
         
-        <img :src="temaAtual === 'karaoke' ? 'fundo-thevoice-app.png' : 'fundo-app.png'" class="fundo-estatico transition-all duration-500" :class="temaAtual === 'karaoke' ? 'object-right' : 'object-center'" alt="Fundo">
+        <!-- ================= FUNDOS COM TRANSIÇÃO (PREVINE BUG DE IMAGEM PRESA) ================= -->
+        <transition name="fade-bg">
+            <img v-if="temaAtual === 'karaoke'" src="fundo-thevoice-app.png" class="fundo-estatico object-right" alt="Fundo Karaoke">
+            <img v-else src="fundo-app.png" class="fundo-estatico object-center" alt="Fundo Pista">
+        </transition>
         <div class="fixed inset-0 bg-black/20 -z-10"></div>
 
         <!-- ================= NOTIFICAÇÃO (TOAST) ================= -->
@@ -123,9 +135,23 @@
         </transition>
 
         <!-- ================= CABEÇALHO GLOBAL FIXO ================= -->
-        <div class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
+        <div v-if="temaAtual !== 'karaoke'" class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
             <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
-            <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-[2px] border-[#262626]/50">
+            <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="irParaCadastro" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-[2px] border-[#262626]/50">
+        </div>
+
+        <div v-if="temaAtual === 'karaoke'" class="relative flex justify-between items-center mt-4 mb-2 w-full px-5 shrink-0 z-40">
+            <div class="flex flex-col items-center justify-center">
+                <div class="flex items-center">
+                    <span class="font-black uppercase text-white tracking-tight text-[26px] leading-none drop-shadow-md">VIRTUAL</span>
+                    <span class="font-black uppercase text-white tracking-tight text-[26px] leading-none border-2 border-white rounded-md px-1 ml-0.5 shadow-sm">DJ</span>
+                </div>
+                <div class="bg-[#2A0826]/90 border border-[#C026D3] rounded-full flex items-center gap-1.5 px-3 py-1 mt-1 shadow-md">
+                    <span class="text-yellow-400 text-xs">⚡</span>
+                    <span class="text-[11px] font-semibold text-white tracking-wide">Automação em Tempo Real</span>
+                </div>
+            </div>
+            <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="irParaCadastro" class="w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-2 border-white/20">
         </div>
 
         <!-- ================= TELA 1: CADASTRO ================= -->
@@ -170,7 +196,7 @@
         <!-- ================= TELA 2: PRINCIPAL (PISTA) ================= -->
         <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full pb-6 overflow-y-auto custom-scroll items-center relative">
             
-            <button @click="telaAtual = 'busca'" class="w-[90%] max-w-[340px] bg-[#141517] text-white font-black text-[32px] tracking-tight uppercase py-4 pl-8 pr-3 my-3 rounded-full flex justify-between items-center shadow-xl shadow-black/60 transition-transform active:scale-95 btn-animado btn-sheen shrink-0">
+            <button @click="irParaBusca" class="w-[90%] max-w-[340px] bg-[#141517] text-white font-black text-[32px] tracking-tight uppercase py-4 pl-8 pr-3 my-3 rounded-full flex justify-between items-center shadow-xl shadow-black/60 transition-transform active:scale-95 btn-animado btn-sheen shrink-0">
                 <span class="flex-1 text-center relative z-10">PEDIR MÚSICA</span>
                 <div class="bg-white rounded-full w-14 h-14 flex items-center justify-center text-[#141517] shrink-0 relative z-10 shadow-sm">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -224,7 +250,7 @@
             </div>
 
             <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
-                <button @click="telaAtual = 'proximas'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
+                <button @click="irParaProximas" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <span>VER PRÓXIMAS</span>
                     <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
@@ -260,7 +286,7 @@
             </div>
             
             <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
-                <button @click="telaAtual = 'principal'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
+                <button @click="irParaPrincipal" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     </div>
@@ -273,7 +299,7 @@
         <div v-if="telaAtual === 'busca'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
             
             <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl mb-4 border border-white/10 shrink-0 relative mt-2">
-                <button @click="telaAtual = 'principal'" class="absolute right-6 top-6 text-[#888888] hover:text-white transition-colors">
+                <button @click="irParaPrincipal" class="absolute right-6 top-6 text-[#888888] hover:text-white transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
                 <h2 class="text-center font-extrabold text-[22px] mb-5 text-white flex items-center justify-center gap-2">
@@ -341,7 +367,7 @@
             </div>
 
             <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
-                <button @click="telaAtual = 'fila_espera'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
+                <button @click="irParaFila" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <span>FILA DE ESPERA</span>
                     <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
@@ -445,7 +471,7 @@
             </div>
 
             <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
-                <button @click="telaAtual = 'principal'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
+                <button @click="irParaPrincipal" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     </div>
@@ -519,14 +545,14 @@
             </div>
 
             <div class="w-[92%] max-w-sm mx-auto shrink-0 flex flex-col gap-3 mt-1 relative z-20">
-                <button @click="telaAtual = 'fila_karaoke'" class="flex items-center justify-between w-full h-[54px] py-1.5 pl-6 pr-2 bg-[#831843] rounded-full shadow-xl transition-transform active:scale-95 border border-white/20">
+                <button @click="irParaFilaKaraoke" class="flex items-center justify-between w-full h-[54px] py-1.5 pl-6 pr-2 bg-[#831843] rounded-full shadow-xl transition-transform active:scale-95 border border-white/20">
                     <span class="font-black text-white text-[15px] uppercase tracking-wider text-left flex-1">VER PEDIDOS PARA CANTAR</span>
                     <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-md">
                         <svg class="w-5 h-5 text-[#831843]" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                     </div>
                 </button>
                 
-                <button @click="voltarAoInicio" class="flex items-center justify-center gap-3 w-full h-[54px] py-1.5 px-6 bg-[#0A0A0C] rounded-full shadow-2xl transition-transform active:scale-95 border border-white/10 relative">
+                <button @click="irParaPrincipal" class="flex items-center justify-center gap-3 w-full h-[54px] py-1.5 px-6 bg-[#0A0A0C] rounded-full shadow-2xl transition-transform active:scale-95 border border-white/10 relative">
                     <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 absolute left-2 shadow-md">
                         <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     </div>
@@ -594,7 +620,7 @@
             </div>
 
             <div class="w-[92%] max-w-sm mx-auto shrink-0 flex flex-col gap-3 mt-1">
-                <button @click="telaAtual = 'busca_karaoke'" class="flex items-center justify-center gap-3 w-full h-[54px] py-1.5 px-4 bg-[#831843] rounded-full shadow-xl transition-transform active:scale-95 border border-white/20 relative">
+                <button @click="irParaKaraoke" class="flex items-center justify-center gap-3 w-full h-[54px] py-1.5 px-4 bg-[#831843] rounded-full shadow-xl transition-transform active:scale-95 border border-white/20 relative">
                     <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 absolute left-2 shadow-md">
                         <svg class="w-5 h-5 text-[#831843]" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     </div>
@@ -604,7 +630,7 @@
                     </div>
                 </button>
                 
-                <button @click="voltarAoInicio" class="flex items-center justify-center gap-3 w-full h-[54px] py-1.5 px-6 bg-[#0A0A0C] rounded-full shadow-2xl transition-transform active:scale-95 border border-white/10 relative">
+                <button @click="irParaPrincipal" class="flex items-center justify-center gap-3 w-full h-[54px] py-1.5 px-6 bg-[#0A0A0C] rounded-full shadow-2xl transition-transform active:scale-95 border border-white/10 relative">
                     <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 absolute left-2 shadow-md">
                         <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     </div>
@@ -693,6 +719,16 @@
                 // COMPUTEDS DO KARAOKÊ
                 const karaokeValido = computed(() => karaokeArtista.value.trim() !== '' && karaokeMusica.value.trim() !== '');
 
+                // FUNÇÕES DE NAVEGAÇÃO BLINDADAS (FORÇAM O TEMA CORRETO)
+                const irParaCadastro = () => { temaAtual.value = 'pista'; telaAtual.value = 'cadastro'; };
+                const irParaPrincipal = () => { temaAtual.value = 'pista'; telaAtual.value = 'principal'; };
+                const irParaBusca = () => { temaAtual.value = 'pista'; telaAtual.value = 'busca'; };
+                const irParaFila = () => { temaAtual.value = 'pista'; telaAtual.value = 'fila_espera'; };
+                const irParaProximas = () => { temaAtual.value = 'pista'; telaAtual.value = 'proximas'; };
+                
+                const irParaKaraoke = () => { temaAtual.value = 'karaoke'; telaAtual.value = 'busca_karaoke'; };
+                const irParaFilaKaraoke = () => { temaAtual.value = 'karaoke'; telaAtual.value = 'fila_karaoke'; };
+
                 // FUNÇÕES DA PISTA
                 const atualizarBusca = (e) => { textoBusca.value = e.target.value; musicaSelecionada.value = ''; };
                 const limparBusca = () => { textoBusca.value = ''; musicaSelecionada.value = ''; };
@@ -719,17 +755,7 @@
                     artistaSelecionado.value = ''; musicaSelecionada.value = ''; textoBusca.value = '';
                 };
 
-                // FUNÇÕES DO KARAOKÊ E NAVEGAÇÃO
-                const irParaKaraoke = () => {
-                    temaAtual.value = 'karaoke';
-                    telaAtual.value = 'busca_karaoke';
-                };
-
-                const voltarAoInicio = () => {
-                    temaAtual.value = 'pista';
-                    telaAtual.value = 'principal';
-                };
-
+                // FUNÇÃO DO PEDIDO DE KARAOKÊ
                 const confirmarKaraoke = () => {
                     if (!karaokeValido.value) return;
                     
@@ -750,7 +776,7 @@
                     karaokeArtista.value = '';
                     karaokeMusica.value = '';
                     karaokeModo.value = 'solo';
-                    telaAtual.value = 'fila_karaoke';
+                    irParaFilaKaraoke();
                 };
 
                 const mostrarToast = (tipo, mensagem) => {
@@ -781,7 +807,7 @@
                         pedidosGerais.value.forEach(p => { if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png'; });
                         pedidosKaraoke.value.forEach(p => { if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png'; });
                     }
-                    telaAtual.value = 'principal';
+                    irParaPrincipal();
                 };
 
                 onMounted(() => {
@@ -790,7 +816,7 @@
                     if (savedName) {
                         nome.value = savedName;
                         if (savedFoto) fotoUrl.value = savedFoto;
-                        telaAtual.value = 'principal';
+                        irParaPrincipal();
                     }
                 });
 
@@ -799,7 +825,8 @@
                     tocandoAgora, proximasMusicas, textoBusca, artistaSelecionado, musicaSelecionada, artistasUnicos, musicasDoArtista,
                     resultadosBusca, atualizarBusca, limparBusca, resetarMusica, selecionarDaBusca, confirmarPedido, musicaPronta,
                     toast, pedidosGerais, filaEsperaExibida, historicoTocadosExibido, apenasMeusPedidos,
-                    karaokeArtista, karaokeMusica, karaokeModo, pedidosKaraoke, karaokeValido, confirmarKaraoke, irParaKaraoke, voltarAoInicio
+                    karaokeArtista, karaokeMusica, karaokeModo, pedidosKaraoke, karaokeValido, confirmarKaraoke, 
+                    irParaCadastro, irParaPrincipal, irParaBusca, irParaFila, irParaProximas, irParaKaraoke, irParaFilaKaraoke
                 }
             }
         }).mount('#app');
