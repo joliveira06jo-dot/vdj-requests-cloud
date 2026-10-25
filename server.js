@@ -5,7 +5,6 @@ const { Server } = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 
-// AUMENTADO: 10MB em vez de 1MB padrão
 const io = new Server(server, { 
     cors: { origin: "*" },
     maxHttpBufferSize: 10 * 1024 * 1024,
@@ -32,6 +31,16 @@ let estado = {
 };
 
 let bridgeSocketId = null;
+
+// CORREÇÃO: Função central para gerar horário no fuso de Brasília
+function horaBrasilia() {
+    return new Date().toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' 
+    });
+}
+function dataBrasilia() {
+    return new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+}
 
 function emitirEstadoCompleto(target) {
     const payload = {
@@ -65,14 +74,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', (reason) => {
-        // NOVO: log do motivo
         if (socket.id === bridgeSocketId) {
             console.log(`[BRIDGE] Desconectado. Motivo: ${reason}`);
             bridgeSocketId = null;
             estado.bridgeOnline = false;
             io.emit('bridge_status', { online: false });
-        } else if (reason === 'transport error' || reason === 'transport close') {
-            console.log(`[SOCKET] Conexão perdida: ${socket.id} (${reason})`);
         }
     });
 
@@ -96,7 +102,7 @@ io.on('connection', (socket) => {
     socket.on('sync_catalogo', (dados) => {
         estado.catalogo = dados;
         io.emit('catalogo_atualizado', dados);
-        console.log(`[CATALOGO] Recebido: ${dados.length} itens (${Math.round(JSON.stringify(dados).length / 1024)}KB)`);
+        console.log(`[CATALOGO] Recebido: ${dados.length} itens`);
     });
 
     socket.on('atualizar_deck_vdj', (deck) => {
@@ -179,7 +185,6 @@ io.on('connection', (socket) => {
         estado.pausado = !estado.pausado;
         io.emit('pausa_status', { pausado: estado.pausado });
         emitirEstadoCompleto();
-        console.log(`[ADMIN] Pausa: ${estado.pausado}`);
     });
 
     socket.on('admin_toggle_auto', () => {
@@ -204,7 +209,6 @@ io.on('connection', (socket) => {
             estado.filaPista.splice(idx, 1);
             io.emit('fila_pista_atualizada', estado.filaPista);
             emitirEstadoCompleto();
-            console.log(`[ADMIN] Removido: ${dados.titulo}`);
         }
     });
 
@@ -213,7 +217,8 @@ io.on('connection', (socket) => {
         if (idx !== -1) {
             const pedido = estado.filaPista.splice(idx, 1)[0];
             pedido.timestamp_tocado = Date.now();
-            pedido.hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            // CORREÇÃO: usa hora de Brasília
+            pedido.hora = horaBrasilia();
             estado.historicoPista.push(pedido);
             io.emit('fila_pista_atualizada', estado.filaPista);
             emitirEstadoCompleto();
@@ -225,7 +230,6 @@ io.on('connection', (socket) => {
             estado.banidos.push(dados.nome);
             io.emit('banidos_atualizados', estado.banidos);
             emitirEstadoCompleto();
-            console.log(`[ADMIN] Banido: ${dados.nome}`);
         }
     });
 
@@ -233,20 +237,19 @@ io.on('connection', (socket) => {
         estado.banidos = estado.banidos.filter(b => b !== dados.nome);
         io.emit('banidos_atualizados', estado.banidos);
         emitirEstadoCompleto();
-        console.log(`[ADMIN] Desbanido: ${dados.nome}`);
     });
 
     socket.on('admin_enviar_comunicado', (dados) => {
+        // CORREÇÃO: usa hora e data de Brasília
         const c = {
             id: Date.now(),
             texto: dados.texto,
-            hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-            data: new Date().toLocaleDateString('pt-BR')
+            hora: horaBrasilia(),
+            data: dataBrasilia()
         };
         estado.comunicados.push(c);
         io.emit('comunicado_recebido', c);
         emitirEstadoCompleto();
-        console.log(`[ADMIN] Comunicado: ${dados.texto}`);
     });
 
     socket.on('admin_reset_evento', () => {
@@ -260,7 +263,6 @@ io.on('connection', (socket) => {
         io.emit('fila_karaoke_atualizada', []);
         io.emit('pausa_status', { pausado: false });
         emitirEstadoCompleto();
-        console.log(`[ADMIN] Evento RESETADO.`);
     });
 
     socket.on('admin_liberar_cooldown', (dados) => {
@@ -268,7 +270,6 @@ io.on('connection', (socket) => {
             !(p.titulo === dados.titulo && p.artista === dados.artista)
         );
         emitirEstadoCompleto();
-        console.log(`[ADMIN] Cooldown liberado: ${dados.titulo}`);
     });
 
     socket.on('admin_pedir_estatisticas', () => {
