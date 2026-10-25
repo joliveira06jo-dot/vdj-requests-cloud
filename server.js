@@ -62,9 +62,22 @@ io.on('connection', (socket) => {
     });
 
     socket.on('musica_tocada', (dados) => {
-        estado.filaPista = estado.filaPista.filter(p => !(p.titulo === dados.titulo && p.artista === dados.artista));
-        estado.historicoPista.push({ ...dados, timestamp_tocado: Date.now() });
+        // 1. Procura a música na fila de pedidos
+        const index = estado.filaPista.findIndex(p => 
+            p.titulo.toLowerCase().includes(dados.titulo.toLowerCase()) || 
+            dados.titulo.toLowerCase().includes(p.titulo.toLowerCase())
+        );
 
+        if (index !== -1) {
+            // 2. Se achou, é um pedido de usuário! Move para o histórico e tira da fila.
+            const pedidoTocado = estado.filaPista.splice(index, 1)[0];
+            pedidoTocado.timestamp_tocado = Date.now();
+            pedidoTocado.hora = dados.hora; // Hora que o VDJ tocou
+            estado.historicoPista.push(pedidoTocado);
+        }
+        // Se não achou, foi o DJ tocando algo aleatório. Não vai para o histórico.
+
+        // 3. Atualiza o "Tocando Agora" para todo mundo
         estado.deckPista.tocandoAgora = {
             titulo: dados.titulo,
             artista: dados.artista,
