@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pedidos VirtualDJ</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="VDJ Pedidos">
+    <link rel="apple-touch-icon" href="logo-vdj.png">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -39,7 +48,6 @@
 <body>
     <div id="app" class="max-w-md mx-auto relative h-[100dvh] flex flex-col font-['Poppins'] overflow-hidden">
 
-        <!-- ============ TELA DE COMUNICADO (TOPO) ============ -->
         <transition name="comunicado">
             <div v-if="comunicadoAtivo" class="fixed top-0 left-0 right-0 z-[200] flex justify-center px-4 pt-4">
                 <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-[15px] py-4 px-6 rounded-2xl shadow-2xl max-w-md text-center leading-snug">
@@ -48,7 +56,6 @@
             </div>
         </transition>
 
-        <!-- ============ TELA PISTA FECHADA (BRIDGE OFFLINE OU PAUSA) ============ -->
         <div v-if="bridgeOnline === false || pausado === true" class="fixed inset-0 z-[100] flex flex-col bg-black">
             <img src="fundo-app.png" alt="" class="pista-fechada-bg" aria-hidden="true">
             <div class="absolute inset-0 bg-black/60"></div>
@@ -80,7 +87,6 @@
             </div>
         </div>
 
-        <!-- ============ APP NORMAL ============ -->
         <div v-else class="contents">
             <transition name="fade-bg">
                 <img v-if="temaAtual === 'karaoke'" src="fundo-thevoice-app.png" class="fundo-estatico object-right" alt="Fundo Karaoke">
@@ -489,6 +495,15 @@
     </div>
 
     <script>
+        // Registro do Service Worker (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch((err) => {
+                    console.log('[PWA] SW não registrado:', err);
+                });
+            });
+        }
+
         const { createApp, ref, computed, onMounted } = Vue;
 
         function checkMarqueeOverflow(el) {
