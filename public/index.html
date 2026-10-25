@@ -32,17 +32,16 @@
         .custom-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .custom-scroll::-webkit-scrollbar { display: none; }
         
-        /* === MARQUEE INTELIGENTE CORRIGIDO === */
         .marquee-wrap { 
             display: block; 
             overflow: hidden; 
             white-space: nowrap; 
             width: 100%; 
-            text-align: center; /* CORRIGIDO: center por padrão */
+            text-align: center;
         }
         .marquee-inner { display: inline-block; white-space: nowrap; will-change: transform; }
         .marquee-wrap.is-overflowing { 
-            text-align: left; /* CORRIGIDO: left só quando rola */
+            text-align: left;
             -webkit-mask-image: linear-gradient(to right, black 0%, black 90%, transparent 100%); 
             mask-image: linear-gradient(to right, black 0%, black 90%, transparent 100%); 
         }
@@ -58,7 +57,6 @@
         .slide-down-enter-active, .slide-down-leave-active { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(-30px); }
 
-        /* === BANNER INSTALAR — CORRIGIDO (CSS puro, sem conflito com Tailwind) === */
         @keyframes flashYellow {
             0%, 100% { box-shadow: 0 4px 20px rgba(149, 21, 115, 0.5); transform: scale(1); }
             25%, 75% { box-shadow: 0 0 40px 12px rgba(251, 191, 36, 1); transform: scale(1.02); }
@@ -223,7 +221,6 @@
 
             <main v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full pb-6 overflow-y-auto custom-scroll items-center relative">
 
-                <!-- BANNER INSTALAR CORRIGIDO (sem classes Tailwind conflitantes) -->
                 <transition name="slide-down">
                     <div v-if="mostrarBannerInstalar" class="banner-instalar">
                         <div class="banner-icon-box">
@@ -747,16 +744,21 @@
                     return catalogo.value.filter(m => m.artista.toLowerCase().includes(t) || m.titulo.toLowerCase().includes(t));
                 });
                 const musicaPronta = computed(() => musicaSelecionada.value !== '' && musicaSelecionada.value != null);
+
+                // CORRIGIDO: inverte a ordem para os mais recentes ficarem no topo
                 const filaEsperaExibida = computed(() => {
-                    let f = pedidosFila.value || [];
+                    let f = [...(pedidosFila.value || [])].reverse();
                     if (apenasMeusPedidos.value && nome.value) f = f.filter(p => p.pedinte.toLowerCase() === nome.value.toLowerCase());
                     return f;
                 });
+
+                // CORRIGIDO: inverte a ordem para os mais recentes ficarem no topo
                 const historicoTocadosExibido = computed(() => {
-                    let h = pedidosHistorico.value || [];
+                    let h = [...(pedidosHistorico.value || [])].reverse();
                     if (apenasMeusPedidos.value && nome.value) h = h.filter(p => p.pedinte.toLowerCase() === nome.value.toLowerCase());
                     return h;
                 });
+
                 const karaokeValido = computed(() => karaokeArtista.value.trim() !== '' && karaokeMusica.value.trim() !== '');
 
                 const irParaCadastro = () => { temaAtual.value = 'pista'; telaAtual.value = 'cadastro'; };
