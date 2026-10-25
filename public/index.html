@@ -134,7 +134,7 @@
             </div>
         </transition>
 
-        <!-- ================= CABEÇALHO GLOBAL ÚNICO (PADRÃO EM TODAS AS TELAS) ================= -->
+        <!-- ================= CABEÇALHO GLOBAL VIRTUAL DJ (FIXO E PADRÃO EM TODAS AS TELAS) ================= -->
         <header class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
             <img src="logo-vdj.png" alt="Logo VirtualDJ" class="h-full object-contain drop-shadow-2xl">
             <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="irParaCadastro" alt="Avatar do Usuário" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-[2px] border-[#262626]/50">
@@ -462,7 +462,19 @@
 
         <!-- ================= TELA 6: PEDIDO KARAOKÊ (THE VOICE FAMÍLIA) ================= -->
         <main v-if="telaAtual === 'busca_karaoke'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
-            <section class="w-full bg-[#951573]/60 backdrop-blur-sm rounded-[36px] pt-5 pb-6 px-5 flex flex-col items-center shadow-[0_20px_40px_rgba(0,0,0,0.7)] mb-4 shrink-0 border border-white/10 relative z-20 mt-2">
+            
+            <!-- Branding The Voice Família (Cabeçalho Secundário do Karaokê) -->
+            <div class="flex items-center justify-between w-full px-1 pt-1 pb-4 relative z-10 shrink-0">
+                <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" alt="Logo The Voice Família" class="w-[45%] max-w-[150px] object-contain drop-shadow-2xl transform -rotate-2">
+                <div class="flex flex-col items-end justify-center flex-1 pl-2">
+                    <span class="font-black text-white text-[32px] uppercase tracking-widest text-right leading-none mb-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">MÓDULO</span>
+                    <div class="rounded-full px-4 py-1.5 bg-[#951573] shadow-lg border border-white/20 w-full flex justify-center">
+                        <span class="font-black text-white text-[19px] uppercase tracking-widest text-center whitespace-nowrap drop-shadow-md">PEDIR MÚSICA</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="w-full bg-[#951573]/60 backdrop-blur-sm rounded-[36px] pt-5 pb-6 px-5 flex flex-col items-center shadow-[0_20px_40px_rgba(0,0,0,0.7)] mb-4 shrink-0 border border-white/10 relative z-20">
                 <div class="flex items-center justify-center gap-2 mb-5 w-full">
                     <span class="text-[20px] shrink-0" aria-hidden="true">🎤</span>
                     <h2 class="font-black text-white text-[20px] uppercase tracking-wider text-center whitespace-nowrap">PEDIR PARA CANTAR</h2>
@@ -531,7 +543,19 @@
 
         <!-- ================= TELA 7: FILA DE KARAOKÊ ================= -->
         <main v-if="telaAtual === 'fila_karaoke'" class="flex flex-col flex-1 w-full px-4 pb-6 overflow-y-auto custom-scroll relative">
-            <section class="w-[96%] mx-auto bg-[#951573]/60 backdrop-blur-sm rounded-[36px] pt-5 pb-5 px-3 flex flex-col shadow-[0_20px_40px_rgba(0,0,0,0.8)] mb-4 flex-1 min-h-[300px] border border-white/10 relative overflow-hidden mt-2">
+            
+            <!-- Branding The Voice Família (Cabeçalho Secundário do Karaokê) -->
+            <div class="flex items-center justify-between w-full px-1 pt-1 pb-4 relative z-10 shrink-0">
+                <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" alt="Logo The Voice Família" class="w-[45%] max-w-[150px] object-contain drop-shadow-2xl transform -rotate-2">
+                <div class="flex flex-col items-end justify-center flex-1 pl-2">
+                    <span class="font-black text-white text-[32px] uppercase tracking-widest text-right leading-none mb-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">MÓDULO</span>
+                    <div class="rounded-full px-4 py-1.5 bg-[#951573] shadow-lg border border-white/20 w-full flex justify-center">
+                        <span class="font-black text-white text-[19px] uppercase tracking-widest text-center whitespace-nowrap drop-shadow-md">PEDIR MÚSICA</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="w-[96%] mx-auto bg-[#951573]/60 backdrop-blur-sm rounded-[36px] pt-5 pb-5 px-3 flex flex-col shadow-[0_20px_40px_rgba(0,0,0,0.8)] mb-4 flex-1 min-h-[300px] border border-white/10 relative overflow-hidden">
                 <div class="flex items-center justify-center gap-2 mb-6 shrink-0 z-10 w-full px-1">
                     <span class="text-[20px] shrink-0" aria-hidden="true">🎤</span>
                     <h2 class="font-black text-white text-[20px] uppercase tracking-wider text-center whitespace-nowrap">JÁ PEDIRAM PARA CANTAR</h2>
