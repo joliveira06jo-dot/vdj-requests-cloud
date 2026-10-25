@@ -95,9 +95,18 @@
                     <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
                     TOCANDO AGORA
                 </div>
-                <div class="w-full h-44 rounded-2xl overflow-hidden shadow-lg mb-3 bg-zinc-900">
-                    <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" alt="Capa da música atual" class="w-full h-full object-cover">
+                
+                <!-- INÍCIO DO EFEITO SPOTIFY -->
+                <div class="w-full h-44 rounded-2xl overflow-hidden shadow-lg mb-3 bg-zinc-900 relative flex items-center justify-center">
+                    <!-- Fundo Desfocado -->
+                    <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" class="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60" alt="">
+                    <div class="absolute inset-0 bg-black/30"></div>
+                    
+                    <!-- Capa Quadrada Centralizada -->
+                    <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" alt="Capa da música atual" class="relative z-10 h-[85%] aspect-square object-cover rounded-xl shadow-2xl border border-white/20">
                 </div>
+                <!-- FIM DO EFEITO SPOTIFY -->
+
                 <div class="text-center mb-1 px-2 w-full overflow-hidden relative flex flex-col justify-center items-center">
                     <div :class="tocandoAgora.titulo.length > 18 ? 'marquee-container w-full' : 'w-full'">
                         <h2 class="text-[24px] font-black text-white tracking-tight leading-tight" :class="tocandoAgora.titulo.length > 18 ? 'marquee-text' : 'truncate'">{{ tocandoAgora.titulo }}</h2>
@@ -320,7 +329,7 @@
                                 </div>
                             </div>
                         </article>
-                        <div v-if="historicoTocadosExibido.length === 0" class="text-center text-gray-400 text-xs py-2 font-medium">Nenhum histórico encontrado.</div>
+                        <div v-if="historicoTocadosExibido.length === 0" class="text-center text-gray-400 text-xs py-2 font-medium">Nenhum pedido tocado ainda.</div>
                     </div>
                 </div>
             </section>
@@ -589,7 +598,8 @@
                 const confirmarKaraoke = () => {
                     if (!karaokeValido.value) return;
                     const now = new Date();
-                    const horaStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+                    const horaStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                    
                     const pedidoKaraokeObj = {
                         pedinte: nome.value || 'USUÁRIO',
                         avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
