@@ -14,13 +14,11 @@
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #1a1a1a; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #666; }
     </style>
 </head>
 <body class="bg-[#0a0a0a] text-white min-h-screen">
 <div id="app" class="max-w-7xl mx-auto p-4 md:p-6">
 
-    <!-- ================= HEADER + STATUS ================= -->
     <header class="bg-[#1a1a1a] rounded-2xl p-4 md:p-6 mb-4 border border-white/10">
         <div class="flex flex-wrap justify-between items-center gap-4">
             <div>
@@ -34,28 +32,21 @@
                     BRIDGE {{ bridgeOnline ? 'ONLINE' : 'OFFLINE' }}
                 </div>
                 <div :class="autoAtivo ? 'bg-blue-500/20 border-blue-500 text-blue-400' : 'bg-gray-500/20 border-gray-500 text-gray-400'"
-                     class="px-4 py-2 rounded-full border text-xs font-bold">
-                    AUTO: {{ autoAtivo ? 'ON' : 'OFF' }}
-                </div>
+                     class="px-4 py-2 rounded-full border text-xs font-bold">AUTO: {{ autoAtivo ? 'ON' : 'OFF' }}</div>
                 <div :class="pausado ? 'bg-orange-500/20 border-orange-500 text-orange-400' : 'bg-gray-500/20 border-gray-500 text-gray-400'"
-                     class="px-4 py-2 rounded-full border text-xs font-bold">
-                    {{ pausado ? '⏸ PAUSADO' : '▶ ATIVO' }}
-                </div>
+                     class="px-4 py-2 rounded-full border text-xs font-bold">{{ pausado ? '⏸ PAUSADO' : '▶ ATIVO' }}</div>
             </div>
         </div>
     </header>
 
-    <!-- ================= TABS ================= -->
     <nav class="bg-[#1a1a1a] rounded-2xl p-2 mb-4 flex flex-wrap gap-1 border border-white/10">
         <button v-for="tab in ['Dashboard','Pista','Karaokê','Configurações','Comunicados']" :key="tab"
                 @click="abaAtual = tab"
                 :class="abaAtual === tab ? 'bg-purple-600 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'"
-                class="px-4 py-2 rounded-xl text-sm font-bold transition-colors">
-            {{ tab }}
-        </button>
+                class="px-4 py-2 rounded-xl text-sm font-bold transition-colors">{{ tab }}</button>
     </nav>
 
-    <!-- ================= DASHBOARD ================= -->
+    <!-- DASHBOARD -->
     <main v-if="abaAtual === 'Dashboard'" class="space-y-4">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-5 border border-purple-400/30">
@@ -75,17 +66,16 @@
                 <p class="text-4xl font-black mt-2">{{ stats.convidadosAtivos }}</p>
             </div>
         </div>
-
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border border-white/10">
             <h3 class="font-black text-lg mb-1">👥 Convidados na Festa</h3>
-            <p class="text-xs text-gray-500 mb-4">Clique em "Banir" para remover um convidado. Ele receberá um aviso e não poderá mais fazer pedidos.</p>
+            <p class="text-xs text-gray-500 mb-4">Clique em Banir para bloquear novos pedidos. Clique em Desbanir para liberar novamente.</p>
             <div class="space-y-2 max-h-96 overflow-y-auto custom-scroll">
                 <div v-for="c in convidadosUnicos" :key="c" class="flex justify-between items-center bg-[#242424] rounded-xl p-3">
                     <span class="font-bold">{{ c }}</span>
-                    <button @click="banirUsuario(c)" :disabled="banidos.includes(c)"
-                            :class="banidos.includes(c) ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'"
+                    <button @click="banidos.includes(c) ? desbanirUsuario(c) : banirUsuario(c)"
+                            :class="banidos.includes(c) ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'"
                             class="text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
-                        {{ banidos.includes(c) ? 'JÁ BANIDO' : '🚫 Banir' }}
+                        {{ banidos.includes(c) ? '✓ Desbanir' : '🚫 Banir' }}
                     </button>
                 </div>
                 <p v-if="convidadosUnicos.length === 0" class="text-gray-500 text-sm text-center py-4">Nenhum convidado ainda.</p>
@@ -93,11 +83,11 @@
         </div>
     </main>
 
-    <!-- ================= PISTA ================= -->
+    <!-- PISTA -->
     <main v-if="abaAtual === 'Pista'" class="space-y-4">
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border border-white/10">
             <h3 class="font-black text-lg mb-1">🎵 Fila de Espera ({{ filaPista.length }})</h3>
-            <p class="text-xs text-gray-500 mb-4">Cada botão tem uma função diferente. Leia a descrição antes de clicar.</p>
+            <p class="text-xs text-gray-500 mb-4">Cada botão tem uma função diferente.</p>
             <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scroll">
                 <div v-for="(p, i) in filaPista" :key="i" class="bg-[#242424] rounded-xl p-4 border border-white/5">
                     <div class="flex justify-between items-start gap-3">
@@ -110,15 +100,15 @@
                     </div>
                     <div class="grid grid-cols-3 gap-2 mt-3">
                         <div>
-                            <button @click="forcarInjecao(p)" class="w-full bg-green-600 hover:bg-green-700 text-xs font-bold py-2 rounded-lg transition-colors">▶ Forçar Injeção</button>
+                            <button @click="forcarInjecao(p)" class="w-full bg-green-600 hover:bg-green-700 text-xs font-bold py-2 rounded-lg">▶ Forçar Injeção</button>
                             <p class="text-[10px] text-gray-500 mt-1 leading-tight">Injeta agora no VDJ</p>
                         </div>
                         <div>
-                            <button @click="marcarTocada(p)" class="w-full bg-blue-600 hover:bg-blue-700 text-xs font-bold py-2 rounded-lg transition-colors">✓ Marcar Tocada</button>
+                            <button @click="marcarTocada(p)" class="w-full bg-blue-600 hover:bg-blue-700 text-xs font-bold py-2 rounded-lg">✓ Marcar Tocada</button>
                             <p class="text-[10px] text-gray-500 mt-1 leading-tight">Move para histórico</p>
                         </div>
                         <div>
-                            <button @click="removerPedido(p)" class="w-full bg-red-600 hover:bg-red-700 text-xs font-bold py-2 rounded-lg transition-colors">🗑 Remover</button>
+                            <button @click="removerPedido(p)" class="w-full bg-red-600 hover:bg-red-700 text-xs font-bold py-2 rounded-lg">🗑 Remover</button>
                             <p class="text-[10px] text-gray-500 mt-1 leading-tight">Cancela o pedido</p>
                         </div>
                     </div>
@@ -126,7 +116,6 @@
                 <p v-if="filaPista.length === 0" class="text-gray-500 text-sm text-center py-8">Nenhum pedido na fila.</p>
             </div>
         </div>
-
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border border-white/10">
             <h3 class="font-black text-lg mb-4">📜 Histórico Completo ({{ historicoPista.length }})</h3>
             <div class="space-y-2 max-h-96 overflow-y-auto custom-scroll">
@@ -142,11 +131,11 @@
         </div>
     </main>
 
-    <!-- ================= KARAOKÊ (SOMENTE LEITURA) ================= -->
+    <!-- KARAOKÊ -->
     <main v-if="abaAtual === 'Karaokê'" class="space-y-4">
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border border-white/10">
             <h3 class="font-black text-lg mb-1">🎤 Fila de Karaokê ({{ filaKaraoke.length }})</h3>
-            <p class="text-xs text-gray-500 mb-4">Somente leitura. Esta fila é gerenciada manualmente pelo DJ.</p>
+            <p class="text-xs text-gray-500 mb-4">Somente leitura. Gerenciada manualmente pelo DJ.</p>
             <div class="space-y-3 max-h-[600px] overflow-y-auto custom-scroll">
                 <div v-for="(k, i) in filaKaraoke" :key="i" class="bg-[#242424] rounded-xl p-3 flex gap-3">
                     <img :src="k.avatar || 'capa-virtualdj.png'" class="w-12 h-12 rounded-full object-cover shrink-0" alt="">
@@ -162,31 +151,28 @@
         </div>
     </main>
 
-    <!-- ================= CONFIGURAÇÕES ================= -->
+    <!-- CONFIGURAÇÕES -->
     <main v-if="abaAtual === 'Configurações'" class="space-y-4">
-
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border border-white/10">
             <h3 class="font-black text-lg mb-4">🎛 Controle de Ingestão</h3>
-
             <div class="bg-[#242424] rounded-xl p-4 mb-3">
                 <div class="flex justify-between items-center">
                     <div>
                         <p class="font-bold">Injeção Automática</p>
-                        <p class="text-xs text-gray-500 mt-1">Se ligado, os pedidos vão direto para o Automix do VDJ. Se desligado, você precisa arrastar manualmente.</p>
+                        <p class="text-xs text-gray-500 mt-1">Se ligado, os pedidos vão direto para o Automix. Se desligado, você precisa arrastar manualmente.</p>
                     </div>
-                    <button @click="toggleAuto" :class="autoAtivo ? 'bg-green-600' : 'bg-gray-600'" class="relative w-14 h-8 rounded-full transition-colors shrink-0 ml-4">
+                    <button @click="toggleAuto" :class="autoAtivo ? 'bg-green-600' : 'bg-gray-600'" class="relative w-14 h-8 rounded-full shrink-0 ml-4">
                         <div :class="autoAtivo ? 'translate-x-6' : 'translate-x-1'" class="absolute top-1 w-6 h-6 bg-white rounded-full transition-transform"></div>
                     </button>
                 </div>
             </div>
-
             <div class="bg-[#242424] rounded-xl p-4">
                 <div class="flex justify-between items-center">
                     <div>
                         <p class="font-bold">Pausar a Festa</p>
-                        <p class="text-xs text-gray-500 mt-1">Bloqueia a tela de todos os convidados com aviso "PISTA FECHADA". Use no intervalo ou na virada do ano.</p>
+                        <p class="text-xs text-gray-500 mt-1">Bloqueia a tela de todos com "PISTA FECHADA". Use no intervalo.</p>
                     </div>
-                    <button @click="togglePausa" :class="pausado ? 'bg-orange-600' : 'bg-gray-600'" class="relative w-14 h-8 rounded-full transition-colors shrink-0 ml-4">
+                    <button @click="togglePausa" :class="pausado ? 'bg-orange-600' : 'bg-gray-600'" class="relative w-14 h-8 rounded-full shrink-0 ml-4">
                         <div :class="pausado ? 'translate-x-6' : 'translate-x-1'" class="absolute top-1 w-6 h-6 bg-white rounded-full transition-transform"></div>
                     </button>
                 </div>
@@ -195,7 +181,7 @@
 
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border border-white/10">
             <h3 class="font-black text-lg mb-1">⏱ Cooldowns Ativos ({{ cooldowns.length }})</h3>
-            <p class="text-xs text-gray-500 mb-4">Músicas que tocaram nos últimos 120 minutos. Bloqueadas para novos pedidos. Clique em "Liberar" para permitir que sejam pedidas novamente.</p>
+            <p class="text-xs text-gray-500 mb-4">Músicas bloqueadas por 120 min. Clique em Liberar para permitir pedidos.</p>
             <div class="space-y-2 max-h-64 overflow-y-auto custom-scroll">
                 <div v-for="(c, i) in cooldowns" :key="i" class="bg-[#242424] rounded-lg p-3 flex justify-between items-center gap-3">
                     <div class="flex-1 min-w-0">
@@ -211,7 +197,7 @@
 
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border border-white/10">
             <h3 class="font-black text-lg mb-1">🚫 Banidos ({{ banidos.length }})</h3>
-            <p class="text-xs text-gray-500 mb-4">Convidados que não podem mais fazer pedidos.</p>
+            <p class="text-xs text-gray-500 mb-4">Convidados bloqueados de fazer pedidos.</p>
             <div class="space-y-2">
                 <div v-for="b in banidos" :key="b" class="bg-[#242424] rounded-lg p-3 flex justify-between items-center">
                     <span class="font-bold">{{ b }}</span>
@@ -223,25 +209,23 @@
 
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border-2 border-red-600/50">
             <h3 class="font-black text-lg text-red-400 mb-1">⚠️ Zona de Perigo</h3>
-            <p class="text-xs text-gray-400 mb-4">As ações abaixo são irreversíveis. Use com cuidado.</p>
-            <div>
-                <button @click="resetEvento" class="w-full bg-red-600 hover:bg-red-700 font-bold py-3 rounded-xl transition-colors">🔄 Resetar Evento</button>
-                <p class="text-xs text-red-300 mt-2">Apaga fila, histórico, cooldowns, comunicados e banidos. Começa um evento do zero.</p>
-            </div>
+            <p class="text-xs text-gray-400 mb-4">Ações irreversíveis.</p>
+            <button @click="resetEvento" class="w-full bg-red-600 hover:bg-red-700 font-bold py-3 rounded-xl">🔄 Resetar Evento</button>
+            <p class="text-xs text-red-300 mt-2">Apaga fila, histórico, cooldowns, comunicados e banidos.</p>
             <div class="mt-4">
-                <button @click="exportarCSV" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 rounded-xl transition-colors">📥 Exportar CSV do Histórico</button>
-                <p class="text-xs text-blue-300 mt-2">Baixa uma planilha com todos os pedidos tocados (relatório pós-evento).</p>
+                <button @click="exportarCSV" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 rounded-xl">📥 Exportar CSV do Histórico</button>
+                <p class="text-xs text-blue-300 mt-2">Relatório pós-evento em planilha.</p>
             </div>
         </div>
     </main>
 
-    <!-- ================= COMUNICADOS ================= -->
+    <!-- COMUNICADOS -->
     <main v-if="abaAtual === 'Comunicados'" class="space-y-4">
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border border-white/10">
             <h3 class="font-black text-lg mb-1">📢 Enviar Comunicado</h3>
-            <p class="text-xs text-gray-500 mb-4">Uma notificação aparecerá no topo da tela de todos os convidados por 8 segundos.</p>
-            <textarea v-model="textoComunicado" rows="3" placeholder="Ex: Voltamos em 15 minutos! O DJ vai fazer um intervalo." class="w-full bg-[#242424] border border-white/10 rounded-xl p-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500"></textarea>
-            <button @click="enviarComunicado" :disabled="!textoComunicado.trim()" class="w-full mt-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed font-bold py-3 rounded-xl transition-colors">🚀 Enviar para Todos</button>
+            <p class="text-xs text-gray-500 mb-4">Aparece no topo da tela de todos os convidados por 8 segundos.</p>
+            <textarea v-model="textoComunicado" rows="3" placeholder="Ex: Voltamos em 15 minutos!" class="w-full bg-[#242424] border border-white/10 rounded-xl p-3 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500"></textarea>
+            <button @click="enviarComunicado" :disabled="!textoComunicado.trim()" class="w-full mt-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed font-bold py-3 rounded-xl">🚀 Enviar para Todos</button>
         </div>
         <div class="bg-[#1a1a1a] rounded-2xl p-5 border border-white/10">
             <h3 class="font-black text-lg mb-4">📋 Histórico de Comunicados</h3>
@@ -279,6 +263,7 @@ createApp({
         const convidadosUnicos = computed(() => {
             const nomes = new Set();
             filaPista.value.concat(historicoPista.value).forEach(p => p.pedinte && nomes.add(p.pedinte));
+            banidos.value.forEach(b => nomes.add(b)); // Inclui banidos
             return Array.from(nomes).sort();
         });
 
@@ -304,7 +289,6 @@ createApp({
             alert(r.sucesso ? `✅ "${r.titulo}" enviada ao VDJ!` : `❌ Não foi possível injetar "${r.titulo}".`);
         });
 
-        // Polling de estatísticas a cada 3s
         setInterval(() => {
             if (socket.connected) {
                 socket.emit('admin_pedir_estatisticas');
@@ -314,13 +298,15 @@ createApp({
 
         const toggleAuto = () => socket.emit('admin_toggle_auto');
         const togglePausa = () => socket.emit('admin_toggle_pausa');
-        const forcarInjecao = (p) => socket.emit('admin_forcar_injecao', { titulo: p.titulo, artista: p.artista });
+        const forcarInjecao = (p) => socket.emit('admin_forcar_injecao', { 
+            titulo: p.titulo, artista: p.artista, caminho: p.caminho || ''
+        });
         const removerPedido = (p) => { if (confirm(`Remover "${p.titulo}" da fila?`)) socket.emit('admin_remover_pedido', { titulo: p.titulo, artista: p.artista }); };
         const marcarTocada = (p) => socket.emit('admin_marcar_tocada', { titulo: p.titulo, artista: p.artista });
-        const banirUsuario = (nome) => { if (confirm(`Banir "${nome}"? Ele não poderá mais fazer pedidos.`)) socket.emit('admin_banir_usuario', { nome }); };
+        const banirUsuario = (nome) => { if (confirm(`Banir "${nome}"?`)) socket.emit('admin_banir_usuario', { nome }); };
         const desbanirUsuario = (nome) => socket.emit('admin_desbanir_usuario', { nome });
         const liberarCooldown = (c) => socket.emit('admin_liberar_cooldown', { titulo: c.titulo, artista: c.artista });
-        const resetEvento = () => { if (confirm('⚠️ ATENÇÃO: Isso apaga TUDO (fila, histórico, cooldowns). Tem certeza?')) socket.emit('admin_reset_evento'); };
+        const resetEvento = () => { if (confirm('⚠️ Apagar TUDO? Tem certeza?')) socket.emit('admin_reset_evento'); };
         const enviarComunicado = () => {
             if (!textoComunicado.value.trim()) return;
             socket.emit('admin_enviar_comunicado', { texto: textoComunicado.value.trim() });
