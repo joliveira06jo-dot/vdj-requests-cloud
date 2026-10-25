@@ -16,19 +16,42 @@ let estado = {
     filaKaraoke: [],
     historicoPista: [], 
     deckPista: { tocandoAgora: null, proximas: [] }, 
-    curtidas: {} 
+    curtidas: {},
+    bridgeOnline: false // NOVO: Estado do Bridge
 };
+
+let bridgeSocketId = null; // NOVO: Rastreia qual socket é o Bridge
 
 io.on('connection', (socket) => {
     console.log(`Nova conexão: ${socket.id}`);
 
+    // Sincronização inicial (envia o estado do bridge também)
     socket.emit('estado_atualizado', {
         filaPista: estado.filaPista,
         filaKaraoke: estado.filaKaraoke,
         historicoPista: estado.historicoPista.slice(-10),
-        deckPista: estado.deckPista
+        deckPista: estado.deckPista,
+        bridgeOnline: estado.bridgeOnline
     });
     socket.emit('catalogo_atualizado', estado.catalogo);
+
+    // NOVO: Identificação do Bridge
+    socket.on('registrar_bridge', () => {
+        bridgeSocketId = socket.id;
+        estado.bridgeOnline = true;
+        io.emit('bridge_status', { online: true });
+        console.log(`[BRIDGE] Registrado: ${socket.id}`);
+    });
+
+    // NOVO: Quando o Bridge cai, avisa todos
+    socket.on('disconnect', () => {
+        if (socket.id === bridgeSocketId) {
+            bridgeSocketId = null;
+            estado.bridgeOnline = false;
+            io.emit('bridge_status', { online: false });
+            console.log(`[BRIDGE] Desconectado.`);
+        }
+    });
 
     socket.on('sync_catalogo', (dadosPython) => {
         estado.catalogo = dadosPython;
@@ -62,32 +85,29 @@ io.on('connection', (socket) => {
     });
 
     socket.on('musica_tocada', (dados) => {
-        // 1. Procura a música na fila de pedidos
         const index = estado.filaPista.findIndex(p => 
             p.titulo.toLowerCase().includes(dados.titulo.toLowerCase()) || 
             dados.titulo.toLowerCase().includes(p.titulo.toLowerCase())
         );
 
         if (index !== -1) {
-            // 2. Se achou, é um pedido de usuário! Move para o histórico e tira da fila.
             const pedidoTocado = estado.filaPista.splice(index, 1)[0];
             pedidoTocado.timestamp_tocado = Date.now();
-            pedidoTocado.hora = dados.hora; // Hora que o VDJ tocou
+            pedidoTocado.hora = dados.hora;
             estado.historicoPista.push(pedidoTocado);
         }
-        // Se não achou, foi o DJ tocando algo aleatório. Não vai para o histórico.
 
-        // 3. Atualiza o "Tocando Agora" para todo mundo
         estado.deckPista.tocandoAgora = {
             titulo: dados.titulo,
             artista: dados.artista,
-            capa: dados.capa || "https://i.ibb.co/xLqB8zP/placeholder-wide.jpg"
+            capa: dados.capa || "https://vdj-requests-cloud.onrender.com/capa-virtualdj.png"
         };
 
         io.emit('estado_atualizado', {
             filaPista: estado.filaPista,
             historicoPista: estado.historicoPista.slice(-10),
-            deckPista: estado.deckPista
+            deckPista: estado.deckPista,
+            bridgeOnline: estado.bridgeOnline
         });
     });
 });
