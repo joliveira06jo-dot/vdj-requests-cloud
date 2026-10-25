@@ -66,11 +66,11 @@
 
         /* Ocultando a Barra de Rolagem Completamente */
         .custom-scroll {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
         }
         .custom-scroll::-webkit-scrollbar {
-            display: none; /* Chrome, Safari and Opera */
+            display: none; 
         }
 
         .marquee-container {
@@ -127,7 +127,6 @@
         <!-- ================= CABEÇALHO GLOBAL FIXO ================= -->
         <div class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
             <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
-            <!-- A foto só aparece se NÃO estiver na tela de cadastro -->
             <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg">
         </div>
 
@@ -171,9 +170,8 @@
         </div>
 
         <!-- ================= TELA 2: PRINCIPAL (PISTA) ================= -->
-        <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full pb-24 overflow-y-auto custom-scroll items-center relative">
+        <div v-if="telaAtual === 'principal'" class="flex flex-col flex-1 w-full pb-6 overflow-y-auto custom-scroll items-center relative">
             
-            <!-- Botão Pedir Música com Brilho Dinâmico e Fonte Maior -->
             <button @click="telaAtual = 'busca'" class="w-[90%] max-w-[340px] bg-[#141517] text-white font-black text-[32px] tracking-tight uppercase py-4 pl-8 pr-3 my-3 rounded-full flex justify-between items-center shadow-xl shadow-black/60 transition-transform active:scale-95 btn-animado btn-sheen shrink-0">
                 <span class="flex-1 text-center relative z-10">PEDIR MÚSICA</span>
                 <div class="bg-white rounded-full w-14 h-14 flex items-center justify-center text-[#141517] shrink-0 relative z-10 shadow-sm">
@@ -192,7 +190,6 @@
                     <img v-if="tocandoAgora.capa" :src="tocandoAgora.capa" class="w-full h-full object-cover">
                 </div>
                 
-                <!-- Marquee para a Música Atual -->
                 <div class="text-center mb-1 px-2 w-full overflow-hidden relative flex flex-col justify-center items-center">
                     <div :class="tocandoAgora.titulo.length > 18 ? 'marquee-container w-full' : 'w-full'">
                         <h2 class="text-[24px] font-black text-white tracking-tight leading-tight" :class="tocandoAgora.titulo.length > 18 ? 'marquee-text' : 'truncate'">{{ tocandoAgora.titulo }}</h2>
@@ -206,7 +203,6 @@
 
                 <h3 class="font-black text-white text-lg text-center tracking-normal mb-3">A seguir</h3>
                 
-                <!-- Marquee para a Fila "A Seguir" -->
                 <div class="w-full">
                     <div v-for="(musica, index) in proximasMusicas.slice(0, 2)" :key="index" class="flex items-center justify-between w-full h-16 bg-[#CFCFCF] rounded-2xl overflow-hidden mb-2.5 shadow-md">
                         <img :src="musica.capa" class="w-16 h-16 shrink-0 object-cover rounded-l-2xl">
@@ -229,19 +225,19 @@
                 </div>
             </div>
 
-            <!-- Botão Fixo/Flutuante no Rodapé (VER PRÓXIMAS) -->
-            <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[85%] max-w-sm z-50">
-                <button @click="telaAtual = 'proximas'" class="w-full bg-[#0A0A0C] rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.9)] flex items-center justify-between py-2.5 pl-8 pr-2.5 transition-transform active:scale-95 border border-white/10">
-                    <span class="text-lg font-black text-white uppercase tracking-wider text-left">VER PRÓXIMAS</span>
-                    <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0 ml-4 shadow-sm">
-                        <svg class="w-5 h-5 text-black font-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+            <!-- Botão VER PRÓXIMAS (Rodapé Padronizado - Não Fixo) -->
+            <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
+                <button @click="telaAtual = 'proximas'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
+                    <span>VER PRÓXIMAS</span>
+                    <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                     </div>
                 </button>
             </div>
         </div>
 
         <!-- ================= TELA 3: FILA EXPANDIDA ================= -->
-        <div v-if="telaAtual === 'proximas'" class="flex flex-col flex-1 w-full px-5 pb-5 min-h-0">
+        <div v-if="telaAtual === 'proximas'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
             <div class="bg-[#2a2a2a] rounded-[2.5rem] pt-6 pb-2 px-2 w-full shadow-2xl flex-1 flex flex-col border border-white/10 min-h-0 mt-2">
                 <h3 class="text-center font-bold text-[22px] mb-4 text-white tracking-wide shrink-0">A seguir</h3>
                 <div class="flex-1 overflow-y-auto custom-scroll px-4">
@@ -265,18 +261,20 @@
                     </div>
                 </div>
             </div>
-            <div class="mt-4 shrink-0">
-                <button @click="telaAtual = 'principal'" class="w-full bg-[#111111] text-white font-black text-[24px] tracking-tight py-4 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
-                    <div class="bg-white rounded-full w-12 h-12 flex items-center justify-center text-black shrink-0 shadow-md">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+            
+            <!-- Botão VOLTAR AO INÍCIO (Rodapé Padronizado - Não Fixo) -->
+            <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
+                <button @click="telaAtual = 'principal'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
+                    <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     </div>
-                    <span class="flex-1 text-center pr-10">VOLTAR AO INÍCIO</span>
+                    <span>VOLTAR AO INÍCIO</span>
                 </button>
             </div>
         </div>
 
         <!-- ================= TELA 4: PEDIDO MUSICAL (BUSCA) ================= -->
-        <div v-if="telaAtual === 'busca'" class="flex flex-col flex-1 w-full px-5 pb-5 overflow-y-auto custom-scroll">
+        <div v-if="telaAtual === 'busca'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
             
             <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl mb-4 border border-white/10 shrink-0 relative mt-2">
                 <button @click="telaAtual = 'principal'" class="absolute right-6 top-6 text-[#888888] hover:text-white transition-colors">
@@ -343,20 +341,21 @@
                 </button>
             </div>
 
-            <div class="shrink-0 mt-2">
-                <button @click="telaAtual = 'fila_espera'" class="w-full bg-[#6a6a6a] text-white font-black text-[22px] tracking-tight py-3 px-3 rounded-full flex items-center justify-between shadow-2xl transition-transform active:scale-95 border border-white/10">
-                    <span class="flex-1 text-center pl-10">VER FILA DE ESPERA</span>
-                    <div class="bg-white rounded-full w-12 h-12 flex items-center justify-center text-gray-500 shrink-0 shadow-md">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+            <!-- Botão VER FILA DE ESPERA (Rodapé Padronizado - Não Fixo) -->
+            <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
+                <button @click="telaAtual = 'fila_espera'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
+                    <span>FILA DE ESPERA</span>
+                    <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
                     </div>
                 </button>
             </div>
         </div>
 
         <!-- ================= TELA 5: FILA DE ESPERA E JÁ TOCADOS ================= -->
-        <div v-if="telaAtual === 'fila_espera'" class="flex flex-col flex-1 w-full px-4 relative min-h-0 pb-24">
+        <div v-if="telaAtual === 'fila_espera'" class="flex flex-col flex-1 w-full px-4 relative min-h-0 pb-6 overflow-y-auto custom-scroll">
             
-            <div class="bg-[#242627] rounded-[36px] pt-4 pb-4 px-3 w-full shadow-2xl flex-1 flex flex-col min-h-0 border border-white/10 mt-2">
+            <div class="bg-[#242627] rounded-[36px] pt-4 pb-4 px-3 w-full shadow-2xl flex-1 flex flex-col min-h-0 border border-white/10 mt-2 shrink-0">
                 
                 <div class="bg-[#18191B] rounded-full py-2.5 px-4 mb-3 shrink-0 shadow-lg mx-2 flex items-center justify-center">
                     <h3 class="font-black text-[22px] text-white tracking-wider">FILA DE ESPERA</h3>
@@ -447,7 +446,8 @@
                 </div>
             </div>
 
-            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-sm z-50">
+            <!-- Botão VOLTAR AO INÍCIO (Rodapé Padronizado - Não Fixo) -->
+            <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
                 <button @click="telaAtual = 'principal'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
