@@ -41,7 +41,6 @@
             animation: pulseZoom 4s infinite ease-in-out;
         }
 
-        /* Efeito de Brilho Importado do The Voice (Sheen) */
         .btn-sheen {
             position: relative;
             overflow: hidden;
@@ -64,7 +63,6 @@
             100% { left: 140%; }
         }
 
-        /* Ocultando a Barra de Rolagem Completamente */
         .custom-scroll {
             -ms-overflow-style: none;  
             scrollbar-width: none;  
@@ -125,9 +123,24 @@
         </transition>
 
         <!-- ================= CABEÇALHO GLOBAL FIXO ================= -->
-        <div class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
+        <!-- Ocultado nas telas do Karaokê para dar espaço ao Branding 3D -->
+        <div v-if="temaAtual !== 'karaoke'" class="relative flex justify-center items-center mt-6 mb-3 h-[65px] w-full px-5 shrink-0 z-40">
             <img src="logo-vdj.png" alt="VirtualDJ" class="h-full object-contain drop-shadow-2xl">
             <img v-if="telaAtual !== 'cadastro'" :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="telaAtual = 'cadastro'" class="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg">
+        </div>
+
+        <div v-if="temaAtual === 'karaoke'" class="relative flex justify-between items-center mt-4 mb-2 w-full px-5 shrink-0 z-40">
+            <div class="flex flex-col items-center justify-center">
+                <div class="flex items-center">
+                    <span class="font-black uppercase text-white tracking-tight text-[26px] leading-none drop-shadow-md">VIRTUAL</span>
+                    <span class="font-black uppercase text-white tracking-tight text-[26px] leading-none border-2 border-white rounded-md px-1 ml-0.5 shadow-sm">DJ</span>
+                </div>
+                <div class="bg-[#2A0826]/90 border border-[#C026D3] rounded-full flex items-center gap-1.5 px-3 py-1 mt-1 shadow-md">
+                    <span class="text-yellow-400 text-xs">⚡</span>
+                    <span class="text-[11px] font-semibold text-white tracking-wide">Automação em Tempo Real</span>
+                </div>
+            </div>
+            <img :src="fotoUrl || 'https://i.ibb.co/6H9nkWm/default-avatar.png'" @click="voltarAoInicio" class="w-14 h-14 rounded-full object-cover cursor-pointer shadow-lg border-2 border-white/20">
         </div>
 
         <!-- ================= TELA 1: CADASTRO ================= -->
@@ -225,7 +238,6 @@
                 </div>
             </div>
 
-            <!-- Botão VER PRÓXIMAS (Rodapé Padronizado - Não Fixo) -->
             <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
                 <button @click="telaAtual = 'proximas'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <span>VER PRÓXIMAS</span>
@@ -262,7 +274,6 @@
                 </div>
             </div>
             
-            <!-- Botão VOLTAR AO INÍCIO (Rodapé Padronizado - Não Fixo) -->
             <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
                 <button @click="telaAtual = 'principal'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
@@ -273,7 +284,7 @@
             </div>
         </div>
 
-        <!-- ================= TELA 4: PEDIDO MUSICAL (BUSCA) ================= -->
+        <!-- ================= TELA 4: PEDIDO MUSICAL (BUSCA - PISTA) ================= -->
         <div v-if="telaAtual === 'busca'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
             
             <div class="bg-[#2a2a2a] rounded-[2.5rem] p-5 w-full shadow-2xl mb-4 border border-white/10 shrink-0 relative mt-2">
@@ -283,16 +294,19 @@
                 <h2 class="text-center font-extrabold text-[22px] mb-5 text-white flex items-center justify-center gap-2">
                     💿 PEDIDO MUSICAL
                 </h2>
+                
                 <div class="flex items-center justify-between bg-black/40 rounded-[2rem] p-1 mb-6 border border-white/10">
                     <button class="flex-1 bg-white text-black font-bold text-[14px] leading-tight py-3 px-1 rounded-[1.8rem] shadow-md transition-colors flex items-center justify-center gap-1.5 text-center">
                         <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.369 4.369 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/></svg>
                         PISTA
                     </button>
-                    <button class="flex-1 text-[#aaaaaa] font-semibold text-[14px] leading-tight py-3 px-1 rounded-[1.8rem] transition-colors flex items-center justify-center gap-1.5 text-center">
+                    <!-- BOTÃO PARA ACIONAR O THE VOICE FAMÍLIA (TELA 6) -->
+                    <button @click="irParaKaraoke" class="flex-1 text-[#aaaaaa] font-semibold text-[14px] leading-tight py-3 px-1 rounded-[1.8rem] transition-colors flex items-center justify-center gap-1.5 text-center hover:text-white">
                         <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path></svg>
                         KARAOKÊ
                     </button>
                 </div>
+                
                 <label class="block text-center text-[13px] font-medium text-white mb-3">Pesquise o nome da música ou artista</label>
                 <div class="relative w-full mb-6">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -341,7 +355,6 @@
                 </button>
             </div>
 
-            <!-- Botão VER FILA DE ESPERA (Rodapé Padronizado - Não Fixo) -->
             <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
                 <button @click="telaAtual = 'fila_espera'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <span>FILA DE ESPERA</span>
@@ -352,7 +365,7 @@
             </div>
         </div>
 
-        <!-- ================= TELA 5: FILA DE ESPERA E JÁ TOCADOS ================= -->
+        <!-- ================= TELA 5: FILA DE ESPERA E JÁ TOCADOS (PISTA) ================= -->
         <div v-if="telaAtual === 'fila_espera'" class="flex flex-col flex-1 w-full px-4 relative min-h-0 pb-6 overflow-y-auto custom-scroll">
             
             <div class="bg-[#242627] rounded-[36px] pt-4 pb-4 px-3 w-full shadow-2xl flex-1 flex flex-col min-h-0 border border-white/10 mt-2 shrink-0">
@@ -446,13 +459,180 @@
                 </div>
             </div>
 
-            <!-- Botão VOLTAR AO INÍCIO (Rodapé Padronizado - Não Fixo) -->
             <div class="mt-6 mb-2 shrink-0 w-[85%] max-w-sm mx-auto">
                 <button @click="telaAtual = 'principal'" class="w-full bg-[#0A0A0C] text-white font-black text-[19px] tracking-widest py-3.5 rounded-full flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.8)] border border-white/10 transition-transform active:scale-95">
                     <div class="bg-white rounded-full w-9 h-9 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     </div>
                     <span>VOLTAR AO INÍCIO</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= TELA 6: PEDIDO KARAOKÊ (THE VOICE FAMÍLIA) ================= -->
+        <div v-if="telaAtual === 'busca_karaoke'" class="flex flex-col flex-1 w-full px-5 pb-6 overflow-y-auto custom-scroll">
+            
+            <div class="flex items-center justify-between w-full px-2 pt-2 pb-4 relative z-10 shrink-0">
+                <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" class="w-[45%] max-w-[140px] object-contain drop-shadow-2xl transform -rotate-2">
+                <div class="flex flex-col items-end justify-center flex-1 pl-2">
+                    <span class="font-black text-white text-[28px] uppercase tracking-wider text-right leading-none mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">MÓDULO</span>
+                    <div class="rounded-full px-4 py-1.5 bg-[#831843] shadow-lg border border-white/10">
+                        <span class="font-black text-white text-[17px] uppercase tracking-wider text-center whitespace-nowrap">PEDIR MÚSICA</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full bg-[#420B44] rounded-[36px] pt-5 pb-6 px-5 flex flex-col items-center shadow-[0_20px_40px_rgba(0,0,0,0.7)] mb-4 shrink-0 border border-white/5 relative z-20">
+                <div class="flex items-center justify-center gap-2 mb-5">
+                    <span class="text-xl">🎤</span>
+                    <h2 class="font-black text-white text-[22px] uppercase tracking-wider text-center">PEDIR PARA CANTAR</h2>
+                </div>
+
+                <label class="text-[13px] font-semibold text-white/95 text-center mb-1.5 block w-full">Nome do Artista / Banda</label>
+                <div class="relative w-full h-12 bg-white rounded-[14px] flex items-center px-4 mb-4 shadow-inner">
+                    <input v-model="karaokeArtista" type="text" class="w-full h-full bg-transparent text-black font-bold text-[17px] pr-6" placeholder="">
+                    <button v-if="karaokeArtista" @click="karaokeArtista = ''" class="absolute right-4 text-gray-500 hover:text-black font-black text-lg">✕</button>
+                </div>
+
+                <label class="text-[13px] font-semibold text-white/95 text-center mb-1.5 block w-full">Nome da Música</label>
+                <div class="relative w-full h-12 bg-white rounded-[14px] flex items-center px-4 mb-6 shadow-inner">
+                    <input v-model="karaokeMusica" type="text" class="w-full h-full bg-transparent text-black font-bold text-[17px] pr-6" placeholder="">
+                    <button v-if="karaokeMusica" @click="karaokeMusica = ''" class="absolute right-4 text-gray-500 hover:text-black font-black text-lg">✕</button>
+                </div>
+
+                <div class="flex items-center justify-center gap-6 w-full mb-6">
+                    <label class="flex items-center gap-2 cursor-pointer" @click="karaokeModo = 'solo'">
+                        <div class="w-5 h-5 rounded-full border-2 border-white flex items-center justify-center shrink-0" :class="karaokeModo === 'solo' ? 'bg-transparent' : ''">
+                            <div v-if="karaokeModo === 'solo'" class="w-2.5 h-2.5 rounded-full bg-white"></div>
+                        </div>
+                        <span class="text-[13px] font-bold text-white tracking-wide">Cantar Sozinho</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer" @click="karaokeModo = 'dueto'">
+                        <div class="w-5 h-5 rounded-full border-2 border-white flex items-center justify-center shrink-0" :class="karaokeModo === 'dueto' ? 'bg-transparent' : ''">
+                            <div v-if="karaokeModo === 'dueto'" class="w-2.5 h-2.5 rounded-full bg-white"></div>
+                        </div>
+                        <span class="text-[13px] font-bold text-white tracking-wide">Cantar em Dueto</span>
+                    </label>
+                </div>
+
+                <div class="w-full max-w-[280px] bg-[#F59E0B] rounded-2xl px-4 py-3 mb-6 shadow-md border border-[#D97706]">
+                    <span class="font-black text-[#503300] text-[13px] uppercase tracking-wider text-center block mb-1">IMPORTANTE:</span>
+                    <span class="text-[11px] font-bold text-[#5C3D00] text-center leading-tight block">Seu pedido não será executado agora, mas ficará anotado para a hora do show!</span>
+                </div>
+
+                <button @click="confirmarKaraoke" :disabled="!karaokeValido" class="flex items-center justify-between w-full max-w-[300px] h-14 py-1.5 pl-6 pr-2 bg-white rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.5)] transition-transform active:scale-95 disabled:opacity-50">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🎤</span>
+                        <span class="font-black text-[#1F2421] text-[15px] uppercase tracking-wider">PEDIR PARA CANTAR</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-[#831843] flex items-center justify-center shrink-0 shadow-inner">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </button>
+            </div>
+
+            <div class="w-[92%] max-w-sm mx-auto shrink-0 flex flex-col gap-3 mt-1 relative z-20">
+                <button @click="telaAtual = 'fila_karaoke'" class="flex items-center justify-between w-full h-[54px] py-1.5 pl-6 pr-2 bg-[#831843] rounded-full shadow-xl transition-transform active:scale-95 border border-white/20">
+                    <span class="font-black text-white text-[15px] uppercase tracking-wider text-left flex-1">VER PEDIDOS PARA CANTAR</span>
+                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-md">
+                        <svg class="w-5 h-5 text-[#831843]" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </button>
+                
+                <button @click="voltarAoInicio" class="flex items-center justify-center gap-3 w-full h-[54px] py-1.5 px-6 bg-[#0A0A0C] rounded-full shadow-2xl transition-transform active:scale-95 border border-white/10 relative">
+                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 absolute left-2 shadow-md">
+                        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                    </div>
+                    <span class="font-black text-white text-[16px] uppercase tracking-wider text-center">VOLTAR AO INÍCIO</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= TELA 7: FILA DE KARAOKÊ ================= -->
+        <div v-if="telaAtual === 'fila_karaoke'" class="flex flex-col flex-1 w-full px-4 pb-6 overflow-y-auto custom-scroll relative">
+            
+            <div class="flex items-center justify-between w-full px-2 pt-2 pb-4 relative z-10 shrink-0">
+                <img src="https://the-voice-familia.onrender.com/logo-thevoice.png" class="w-[45%] max-w-[140px] object-contain drop-shadow-2xl transform -rotate-2">
+                <div class="flex flex-col items-end justify-center flex-1 pl-2">
+                    <span class="font-black text-white text-[28px] uppercase tracking-wider text-right leading-none mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">MÓDULO</span>
+                    <div class="rounded-full px-4 py-1.5 bg-[#831843] shadow-lg border border-white/10">
+                        <span class="font-black text-white text-[17px] uppercase tracking-wider text-center whitespace-nowrap">PEDIR MÚSICA</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-[96%] mx-auto bg-[#420B44] rounded-[36px] pt-5 pb-5 px-3 flex flex-col shadow-[0_20px_40px_rgba(0,0,0,0.8)] mb-4 flex-1 min-h-[300px] border border-white/5 relative overflow-hidden">
+                
+                <div class="flex items-center justify-center gap-2 mb-6 shrink-0 z-10">
+                    <span class="text-[22px]">🎤</span>
+                    <h2 class="font-black text-white text-[22px] uppercase tracking-wider text-center">JÁ PEDIRAM PARA CANTAR</h2>
+                </div>
+                
+                <div class="absolute right-1.5 top-16 bottom-6 w-3 flex flex-col items-center justify-between pointer-events-none opacity-70 z-20">
+                    <span class="text-[9px] text-white/60">▲</span>
+                    <div class="flex-1 w-[2px] bg-white/10 my-1 relative rounded-full">
+                        <div class="absolute top-0 w-full h-12 bg-white/40 rounded-full flex flex-col items-center justify-center gap-[4px] border border-white/20">
+                            <div class="w-1.5 h-[1px] bg-black/50"></div>
+                            <div class="w-1.5 h-[1px] bg-black/50"></div>
+                            <div class="w-1.5 h-[1px] bg-black/50"></div>
+                        </div>
+                    </div>
+                    <span class="text-[9px] text-white/60">▼</span>
+                </div>
+
+                <div class="flex-1 overflow-y-auto custom-scroll pr-4 pl-1 z-10">
+                    <div class="space-y-5 pt-1 pb-4">
+                        <div v-for="(pedido, index) in pedidosKaraoke" :key="'kar-'+index" class="relative flex items-stretch w-full">
+                            
+                            <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-[72px] h-[72px] rounded-full overflow-hidden shadow-xl z-20 border-[3px] border-[#420B44]">
+                                <img :src="pedido.avatar" class="w-full h-full object-cover">
+                            </div>
+                            
+                            <div class="flex flex-col w-full pl-[56px] z-10">
+                                <div class="w-full bg-[#350838] rounded-t-[14px] pr-2.5 py-1.5 flex items-center justify-between min-h-[26px]">
+                                    <span class="text-[10px] text-white leading-tight pl-[18px] truncate"><strong class="font-black uppercase">{{ pedido.pedinte }}</strong> já pediu para cantar</span>
+                                    <span class="text-[9px] font-bold text-white/60 tracking-tight shrink-0 ml-2 whitespace-nowrap">{{ pedido.hora }}</span>
+                                </div>
+                                
+                                <div class="w-full bg-[#D8D8DC] rounded-b-[16px] pr-2.5 py-2.5 flex items-center justify-between pl-[18px] min-h-[52px]">
+                                    <div class="flex flex-col overflow-hidden mr-2 flex-1 relative">
+                                        <div :class="pedido.musica.length > 18 ? 'marquee-container' : ''">
+                                            <h4 class="text-[15px] font-black text-black leading-tight" :class="pedido.musica.length > 18 ? 'marquee-text' : 'truncate'">{{ pedido.musica }}</h4>
+                                        </div>
+                                        <div :class="pedido.artista.length > 22 ? 'marquee-container mt-0.5' : 'mt-0.5'">
+                                            <p class="text-[12px] font-bold text-gray-700 leading-none" :class="pedido.artista.length > 22 ? 'marquee-text' : 'truncate'">{{ pedido.artista }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="rounded-md px-2.5 py-1 shrink-0 bg-[#831843] shadow-sm border border-black/10">
+                                        <span class="text-[10px] font-black text-white tracking-widest uppercase text-center block leading-none">{{ pedido.modo }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div v-if="pedidosKaraoke.length === 0" class="text-center text-white/50 text-sm py-4 font-semibold">
+                            Ninguém pediu para cantar ainda.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-[92%] max-w-sm mx-auto shrink-0 flex flex-col gap-3 mt-1">
+                <button @click="telaAtual = 'busca_karaoke'" class="flex items-center justify-center gap-3 w-full h-[54px] py-1.5 px-4 bg-[#831843] rounded-full shadow-xl transition-transform active:scale-95 border border-white/20 relative">
+                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 absolute left-2 shadow-md">
+                        <svg class="w-5 h-5 text-[#831843]" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                    </div>
+                    <div class="flex items-center gap-2 pl-4">
+                        <span class="text-[20px]">🎤</span>
+                        <span class="font-black text-white text-[16px] uppercase tracking-wider">PEDIR PARA CANTAR</span>
+                    </div>
+                </button>
+                
+                <button @click="voltarAoInicio" class="flex items-center justify-center gap-3 w-full h-[54px] py-1.5 px-6 bg-[#0A0A0C] rounded-full shadow-2xl transition-transform active:scale-95 border border-white/10 relative">
+                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 absolute left-2 shadow-md">
+                        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                    </div>
+                    <span class="font-black text-white text-[16px] uppercase tracking-wider text-center pl-4">VOLTAR AO INÍCIO</span>
                 </button>
             </div>
         </div>
@@ -473,14 +653,14 @@
                 const fotoPreview = ref('');
                 const uploading = ref(false);
                 const toast = ref({ ativa: false, tipo: 'sucesso', mensagem: '' });
-                const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
                 
+                const tocandoAgora = ref({ titulo: 'Nem é Bom Lembrar', artista: 'Marília Mendonça', capa: 'https://i.ibb.co/xLqB8zP/placeholder-wide.jpg' });
                 const proximasMusicas = ref([
                     { titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg' },
                     { titulo: 'Até Você Voltar', artista: 'Henrique e Juliano', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg' }
                 ]);
 
-                // LÓGICA DA TELA 4 (BUSCA) E TELA 5 (FILA DE ESPERA)
+                // LÓGICA DA PISTA (TELA 4 E 5)
                 const textoBusca = ref('');
                 const artistaSelecionado = ref('');
                 const musicaSelecionada = ref('');
@@ -494,7 +674,6 @@
                     { id: 5, artista: 'Anitta', titulo: 'Show das Poderosas', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg' }
                 ]);
 
-                // Array Central que unifica as filas. Controla o estado de TUDO no evento.
                 const pedidosGerais = ref([
                     { pedinte: 'Julio', avatar: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg', titulo: 'Na Batida (Ao Vivo)', artista: 'Anitta', capa: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg', status: 'fila', hora: null },
                     { pedinte: 'Marcos', avatar: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg', titulo: 'Primavera', artista: 'Jorge e Mateus', capa: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg', status: 'fila', hora: null },
@@ -502,100 +681,131 @@
                     { pedinte: 'Camila', avatar: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg', titulo: 'Show das Poderosas', artista: 'Anitta', capa: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg', status: 'tocado', hora: '21:45' }
                 ]);
 
-                const artistasUnicos = computed(() => {
-                    const artistas = catalogoMock.value.map(m => m.artista);
-                    return [...new Set(artistas)].sort();
-                });
+                // LÓGICA DO KARAOKÊ (TELA 6 E 7)
+                const karaokeArtista = ref('');
+                const karaokeMusica = ref('');
+                const karaokeModo = ref('solo');
+                
+                const pedidosKaraoke = ref([
+                    { pedinte: 'JÚLIO', avatar: 'https://i.ibb.co/m0fT8h6/placeholder-sq2.jpg', musica: 'Evidências', artista: 'Chitãozinho & Xororó', modo: 'SOLO', hora: '22:12 - 31/12/2026' },
+                    { pedinte: 'FELIPE', avatar: 'https://i.ibb.co/30ZcM9G/placeholder-sq1.jpg', musica: 'Dormi na Praça', artista: 'Bruno & Marrone', modo: 'SOLO', hora: '22:12 - 31/12/2026' },
+                    { pedinte: 'JÚLIAV', avatar: 'https://i.ibb.co/6H9nkWm/placeholder-sq3.jpg', musica: 'Cheia de Manias', artista: 'Raça Negra', modo: 'DUETO', hora: '22:12 - 31/12/2026' }
+                ]);
 
-                const musicasDoArtista = computed(() => {
-                    if (!artistaSelecionado.value) return [];
-                    return catalogoMock.value.filter(m => m.artista === artistaSelecionado.value).sort((a, b) => a.titulo.localeCompare(b.titulo));
-                });
-
+                // COMPUTEDS DA PISTA
+                const artistasUnicos = computed(() => [...new Set(catalogoMock.value.map(m => m.artista))].sort());
+                const musicasDoArtista = computed(() => catalogoMock.value.filter(m => m.artista === artistaSelecionado.value).sort((a, b) => a.titulo.localeCompare(b.titulo)));
                 const resultadosBusca = computed(() => {
                     if (!textoBusca.value || textoBusca.value.length < 2) return [];
                     const termo = textoBusca.value.toLowerCase();
-                    return catalogoMock.value.filter(m => 
-                        m.artista.toLowerCase().includes(termo) || m.titulo.toLowerCase().includes(termo)
-                    );
+                    return catalogoMock.value.filter(m => m.artista.toLowerCase().includes(termo) || m.titulo.toLowerCase().includes(termo));
                 });
-
-                const musicaPronta = computed(() => {
-                    return musicaSelecionada.value !== '' && musicaSelecionada.value != null;
-                });
-
+                const musicaPronta = computed(() => musicaSelecionada.value !== '' && musicaSelecionada.value != null);
+                
                 const filaEsperaExibida = computed(() => {
                     let fila = pedidosGerais.value.filter(p => p.status === 'fila');
-                    if (apenasMeusPedidos.value && nome.value) {
-                        fila = fila.filter(p => p.pedinte.toLowerCase() === nome.value.toLowerCase());
-                    }
+                    if (apenasMeusPedidos.value && nome.value) fila = fila.filter(p => p.pedinte.toLowerCase() === nome.value.toLowerCase());
                     return fila;
                 });
 
                 const historicoTocadosExibido = computed(() => {
                     let hist = pedidosGerais.value.filter(p => p.status === 'tocado');
-                    if (apenasMeusPedidos.value && nome.value) {
-                        hist = hist.filter(p => p.pedinte.toLowerCase() === nome.value.toLowerCase());
-                    }
+                    if (apenasMeusPedidos.value && nome.value) hist = hist.filter(p => p.pedinte.toLowerCase() === nome.value.toLowerCase());
                     return hist;
                 });
 
-                const atualizarBusca = (event) => {
-                    textoBusca.value = event.target.value;
-                    musicaSelecionada.value = ''; 
-                };
+                // COMPUTEDS DO KARAOKÊ
+                const karaokeValido = computed(() => karaokeArtista.value.trim() !== '' && karaokeMusica.value.trim() !== '');
 
-                const limparBusca = () => {
-                    textoBusca.value = '';
-                    musicaSelecionada.value = '';
-                };
-
-                const resetarMusica = () => {
-                    musicaSelecionada.value = '';
-                    textoBusca.value = ''; 
-                };
-
+                // FUNÇÕES DA PISTA
+                const atualizarBusca = (e) => { textoBusca.value = e.target.value; musicaSelecionada.value = ''; };
+                const limparBusca = () => { textoBusca.value = ''; musicaSelecionada.value = ''; };
+                const resetarMusica = () => { musicaSelecionada.value = ''; textoBusca.value = ''; };
+                
                 const selecionarDaBusca = (musica) => {
                     artistaSelecionado.value = musica.artista;
-                    setTimeout(() => {
-                        musicaSelecionada.value = musica;
-                        textoBusca.value = `${musica.titulo} - ${musica.artista}`; 
-                    }, 50);
-                };
-
-                const mostrarToast = (tipo, mensagem) => {
-                    toast.value = { ativa: true, tipo, mensagem };
-                    setTimeout(() => {
-                        toast.value.ativa = false;
-                    }, 3000);
+                    setTimeout(() => { musicaSelecionada.value = musica; textoBusca.value = `${musica.titulo} - ${musica.artista}`; }, 50);
                 };
 
                 const confirmarPedido = () => {
                     if (!musicaPronta.value) return;
-                    
-                    const tituloEscolhido = musicaSelecionada.value.titulo;
-
-                    const duplicada = pedidosGerais.value.some(p => p.titulo === tituloEscolhido && p.status === 'fila');
-
+                    const duplicada = pedidosGerais.value.some(p => p.titulo === musicaSelecionada.value.titulo && p.status === 'fila');
                     if (duplicada) {
                         mostrarToast('aviso', 'Essa música já está na fila da pista!');
                     } else {
                         pedidosGerais.value.unshift({
-                            pedinte: nome.value || 'Usuário',
-                            avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
-                            titulo: musicaSelecionada.value.titulo,
-                            artista: musicaSelecionada.value.artista,
-                            capa: musicaSelecionada.value.capa,
-                            status: 'fila',
-                            hora: null
+                            pedinte: nome.value || 'Usuário', avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
+                            titulo: musicaSelecionada.value.titulo, artista: musicaSelecionada.value.artista, capa: musicaSelecionada.value.capa,
+                            status: 'fila', hora: null
                         });
-
                         mostrarToast('sucesso', 'Pedido enviado com sucesso! 🚀');
                     }
+                    artistaSelecionado.value = ''; musicaSelecionada.value = ''; textoBusca.value = '';
+                };
+
+                // FUNÇÕES DO KARAOKÊ E NAVEGAÇÃO
+                const irParaKaraoke = () => {
+                    temaAtual.value = 'karaoke';
+                    telaAtual.value = 'busca_karaoke';
+                };
+
+                const voltarAoInicio = () => {
+                    temaAtual.value = 'pista';
+                    telaAtual.value = 'principal';
+                };
+
+                const confirmarKaraoke = () => {
+                    if (!karaokeValido.value) return;
                     
-                    artistaSelecionado.value = '';
-                    musicaSelecionada.value = '';
-                    textoBusca.value = '';
+                    const now = new Date();
+                    const horaStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+                    
+                    pedidosKaraoke.value.unshift({
+                        pedinte: nome.value || 'USUÁRIO',
+                        avatar: fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png',
+                        musica: karaokeMusica.value,
+                        artista: karaokeArtista.value,
+                        modo: karaokeModo.value.toUpperCase(),
+                        hora: horaStr
+                    });
+
+                    mostrarToast('sucesso', 'Pedido anotado para o show! 🎤');
+                    
+                    karaokeArtista.value = '';
+                    karaokeMusica.value = '';
+                    karaokeModo.value = 'solo';
+                    telaAtual.value = 'fila_karaoke';
+                };
+
+                const mostrarToast = (tipo, mensagem) => {
+                    toast.value = { ativa: true, tipo, mensagem };
+                    setTimeout(() => { toast.value.ativa = false; }, 3000);
+                };
+
+                const processarFoto = async (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    fotoPreview.value = URL.createObjectURL(file);
+                    uploading.value = true;
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    try {
+                        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+                        const data = await res.json();
+                        if (data.success) fotoUrl.value = data.data.url;
+                    } catch (e) {
+                        alert('Falha na conexão com o ImgBB.'); fotoPreview.value = '';
+                    } finally { uploading.value = false; }
+                };
+
+                const avancar = () => {
+                    localStorage.setItem('vdj_nome', nome.value);
+                    if (fotoUrl.value) localStorage.setItem('vdj_foto', fotoUrl.value);
+                    if(nome.value.toLowerCase() === 'julio') {
+                        pedidosGerais.value.forEach(p => { if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png'; });
+                        pedidosKaraoke.value.forEach(p => { if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png'; });
+                    }
+                    telaAtual.value = 'principal';
                 };
 
                 onMounted(() => {
@@ -608,47 +818,12 @@
                     }
                 });
 
-                const processarFoto = async (event) => {
-                    const file = event.target.files[0];
-                    if (!file) return;
-
-                    fotoPreview.value = URL.createObjectURL(file);
-                    uploading.value = true;
-
-                    const formData = new FormData();
-                    formData.append('image', file);
-
-                    try {
-                        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-                        const data = await res.json();
-                        if (data.success) fotoUrl.value = data.data.url;
-                    } catch (e) {
-                        alert('Falha na conexão com o ImgBB.');
-                        fotoPreview.value = '';
-                    } finally {
-                        uploading.value = false;
-                    }
-                };
-
-                const avancar = () => {
-                    localStorage.setItem('vdj_nome', nome.value);
-                    if (fotoUrl.value) localStorage.setItem('vdj_foto', fotoUrl.value);
-                    
-                    if(nome.value.toLowerCase() === 'julio') {
-                        pedidosGerais.value.forEach(p => {
-                            if(p.pedinte.toLowerCase() === 'julio') p.avatar = fotoUrl.value || 'https://i.ibb.co/6H9nkWm/default-avatar.png';
-                        });
-                    }
-
-                    telaAtual.value = 'principal';
-                };
-
                 return {
                     telaAtual, temaAtual, nome, fotoUrl, fotoPreview, uploading, processarFoto, avancar,
-                    tocandoAgora, proximasMusicas, 
-                    textoBusca, artistaSelecionado, musicaSelecionada, artistasUnicos, musicasDoArtista,
+                    tocandoAgora, proximasMusicas, textoBusca, artistaSelecionado, musicaSelecionada, artistasUnicos, musicasDoArtista,
                     resultadosBusca, atualizarBusca, limparBusca, resetarMusica, selecionarDaBusca, confirmarPedido, musicaPronta,
-                    toast, pedidosGerais, filaEsperaExibida, historicoTocadosExibido, apenasMeusPedidos
+                    toast, pedidosGerais, filaEsperaExibida, historicoTocadosExibido, apenasMeusPedidos,
+                    karaokeArtista, karaokeMusica, karaokeModo, pedidosKaraoke, karaokeValido, confirmarKaraoke, irParaKaraoke, voltarAoInicio
                 }
             }
         }).mount('#app');
