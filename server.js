@@ -17,15 +17,14 @@ let estado = {
     historicoPista: [], 
     deckPista: { tocandoAgora: null, proximas: [] }, 
     curtidas: {},
-    bridgeOnline: false // NOVO: Estado do Bridge
+    bridgeOnline: false
 };
 
-let bridgeSocketId = null; // NOVO: Rastreia qual socket é o Bridge
+let bridgeSocketId = null; 
 
 io.on('connection', (socket) => {
     console.log(`Nova conexão: ${socket.id}`);
 
-    // Sincronização inicial (envia o estado do bridge também)
     socket.emit('estado_atualizado', {
         filaPista: estado.filaPista,
         filaKaraoke: estado.filaKaraoke,
@@ -35,7 +34,11 @@ io.on('connection', (socket) => {
     });
     socket.emit('catalogo_atualizado', estado.catalogo);
 
-    // NOVO: Identificação do Bridge
+    // Endpoint para o app verificar o estado atual do bridge (polling)
+    socket.on('verificar_bridge', () => {
+        socket.emit('bridge_status', { online: estado.bridgeOnline });
+    });
+
     socket.on('registrar_bridge', () => {
         bridgeSocketId = socket.id;
         estado.bridgeOnline = true;
@@ -43,7 +46,6 @@ io.on('connection', (socket) => {
         console.log(`[BRIDGE] Registrado: ${socket.id}`);
     });
 
-    // NOVO: Quando o Bridge cai, avisa todos
     socket.on('disconnect', () => {
         if (socket.id === bridgeSocketId) {
             bridgeSocketId = null;
